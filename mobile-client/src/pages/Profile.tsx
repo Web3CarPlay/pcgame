@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAtom, useAtomValue } from 'jotai';
+import { Link } from 'react-router-dom';
+import { useAtomValue } from 'jotai';
 import { playerUserAtom, playerTokenAtom } from '../store/atoms';
 import { playerApi, authApi } from '../api/client';
 import './Profile.css';
 
 export default function Profile() {
-    const navigate = useNavigate();
-    const [user, setUser] = useAtom(playerUserAtom);
+    const user = useAtomValue(playerUserAtom);
     const token = useAtomValue(playerTokenAtom);
     const [inviteCode, setInviteCode] = useState('');
     const [inviteUrl, setInviteUrl] = useState('');
@@ -96,6 +95,12 @@ export default function Profile() {
             )}
 
             <div className="menu-section">
+                <Link to="/stats" className="menu-item highlight">
+                    <span className="menu-icon">📊</span>
+                    <span className="menu-label">推广统计</span>
+                    <span className="menu-badge">{referrals.length}人</span>
+                    <span className="menu-arrow">›</span>
+                </Link>
                 <Link to="/history" className="menu-item">
                     <span className="menu-icon">📜</span>
                     <span className="menu-label">投注记录</span>

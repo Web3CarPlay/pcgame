@@ -160,10 +160,50 @@ export const betApi = {
 // Player API (Authenticated)
 // ==========================================
 
+export interface ReferralUser {
+    id: number;
+    username: string;
+    total_bet: number;      // 总投注额
+    total_win: number;      // 总中奖额
+    net_loss: number;       // 客损 (投注额 - 中奖额)
+    created_at: string;
+}
+
+export interface ReferralStats {
+    total_referrals: number;     // 下线总人数
+    active_referrals: number;    // 活跃下线
+    total_customer_loss: number; // 总客损
+    total_commission: number;    // 总佣金
+    commission_rate: number;     // 佣金比例
+}
+
+export interface DailyEarning {
+    date: string;
+    customer_loss: number;
+    commission: number;
+    referral_count: number;
+}
+
+export interface EarningsSummary {
+    total_earnings: number;
+    pending_earnings: number;
+    settled_earnings: number;
+    daily_earnings: DailyEarning[];
+}
+
 export const playerApi = {
     getMe: () => request<any>('/api/v1/player/me', {}, true),
     getInviteCode: () => request<{ invite_code: string; invite_url: string }>('/api/v1/player/invite-code', {}, true),
-    getReferrals: () => request<any[]>('/api/v1/player/referrals', {}, true),
+    getReferrals: () => request<ReferralUser[]>('/api/v1/player/referrals', {}, true),
+    getReferralStats: () => request<ReferralStats>('/api/v1/player/referral-stats', {}, true),
+    getEarnings: (startDate?: string, endDate?: string) => {
+        let url = '/api/v1/player/earnings';
+        const params = new URLSearchParams();
+        if (startDate) params.append('start_date', startDate);
+        if (endDate) params.append('end_date', endDate);
+        if (params.toString()) url += '?' + params.toString();
+        return request<EarningsSummary>(url, {}, true);
+    },
 };
 
 // ==========================================

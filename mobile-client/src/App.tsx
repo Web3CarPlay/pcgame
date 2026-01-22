@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import Game from './pages/Game';
 import History from './pages/History';
 import Profile from './pages/Profile';
+import Stats from './pages/Stats';
 import './App.css';
 
 // Protected route wrapper
@@ -65,6 +66,14 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <Profile />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/stats',
+    element: (
+      <ProtectedRoute>
+        <Stats />
       </ProtectedRoute>
     ),
   },

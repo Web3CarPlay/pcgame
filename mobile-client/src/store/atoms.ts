@@ -39,5 +39,10 @@ export interface BetSelection {
 export const selectedChipAtom = atom<number>(10);
 export const betSelectionsAtom = atom<BetSelection[]>([]);
 
+// Alias for backwards compatibility
+export const userAtom = playerUserAtom;
+export const selectedBetsAtom = betSelectionsAtom;
+export const chipAmountAtom = selectedChipAtom;
+
 // UI State
 export const isLoadingAtom = atom<boolean>(false);

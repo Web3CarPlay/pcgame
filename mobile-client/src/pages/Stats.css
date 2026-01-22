@@ -1,0 +1,365 @@
+.stats-page {
+    min-height: 100vh;
+    background: linear-gradient(180deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%);
+    padding-bottom: 90px;
+}
+
+.stats-header {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: var(--border-subtle);
+}
+
+.stats-header .back-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-secondary);
+    font-size: 1.2rem;
+    margin-right: 12px;
+}
+
+.stats-header h1 {
+    flex: 1;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.stats-content {
+    padding: 20px;
+}
+
+/* Summary Cards */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.summary-card {
+    background: var(--color-bg-card);
+    border: var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    text-align: center;
+}
+
+.summary-card.highlight {
+    background: linear-gradient(135deg, rgba(245, 175, 25, 0.15) 0%, rgba(245, 175, 25, 0.05) 100%);
+    border: var(--border-gold);
+}
+
+.summary-card .icon {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+}
+
+.summary-card .value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--color-gold-primary);
+    margin-bottom: 4px;
+}
+
+.summary-card .label {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+}
+
+/* Commission Card */
+.commission-card {
+    background: linear-gradient(135deg, rgba(245, 175, 25, 0.2) 0%, rgba(196, 136, 26, 0.1) 100%);
+    border: var(--border-gold);
+    border-radius: var(--radius-xl);
+    padding: 24px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.commission-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(245, 175, 25, 0.2) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.commission-card .title {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 8px;
+}
+
+.commission-card .amount {
+    font-size: 2.2rem;
+    font-weight: 700;
+    background: var(--color-gold-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+}
+
+.commission-card .rate {
+    display: inline-block;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: var(--color-gold-secondary);
+}
+
+/* Section Title */
+.section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.section-title h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-title .count {
+    background: var(--color-gold-primary);
+    color: #0a0a0f;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+/* Referral List */
+.referral-list {
+    margin-bottom: 24px;
+}
+
+.referral-item {
+    background: var(--color-bg-card);
+    border: var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    margin-bottom: 10px;
+    transition: all 0.2s;
+}
+
+.referral-item:hover {
+    background: var(--color-bg-card-hover);
+    border-color: rgba(245, 175, 25, 0.2);
+}
+
+.referral-item-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.referral-avatar {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--color-gold-dark), var(--color-gold-primary));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #0a0a0f;
+    margin-right: 12px;
+}
+
+.referral-info {
+    flex: 1;
+}
+
+.referral-name {
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.referral-date {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+.referral-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--radius-md);
+    padding: 12px;
+}
+
+.referral-stat {
+    text-align: center;
+}
+
+.referral-stat .stat-label {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    margin-bottom: 4px;
+}
+
+.referral-stat .stat-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.referral-stat .stat-value.loss {
+    color: var(--color-success);
+}
+
+.referral-stat .stat-value.win {
+    color: var(--color-danger);
+}
+
+/* Daily Earnings */
+.daily-earnings {
+    margin-bottom: 24px;
+}
+
+.daily-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--color-bg-card);
+    border: var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    margin-bottom: 8px;
+}
+
+.daily-date {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+}
+
+.daily-commission {
+    font-weight: 600;
+    color: var(--color-gold-primary);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--color-text-muted);
+}
+
+.empty-state .icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state p {
+    font-size: 0.95rem;
+}
+
+/* Date Filter */
+.date-filter {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+}
+
+.date-filter button {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    background: var(--color-bg-card);
+    border: var(--border-subtle);
+    color: var(--color-text-secondary);
+    border-radius: var(--radius-md);
+}
+
+.date-filter button.active {
+    background: var(--color-gold-gradient);
+    color: #0a0a0f;
+    border: none;
+}
+
+/* QR Code Section in Profile */
+.qr-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px;
+    margin-bottom: 20px;
+}
+
+.qr-container {
+    background: #fff;
+    padding: 16px;
+    border-radius: var(--radius-lg);
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-gold);
+}
+
+.qr-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.qr-actions button {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+}
+
+/* Bottom Nav - shared across pages */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    background: rgba(10, 10, 15, 0.95);
+    backdrop-filter: blur(20px);
+    border-top: var(--border-subtle);
+    padding: 10px 0;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+    z-index: 100;
+}
+
+.nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: var(--color-text-muted);
+    font-size: 0.7rem;
+    transition: color 0.2s;
+    text-decoration: none;
+}
+
+.nav-item.active {
+    color: var(--color-gold-primary);
+}
+
+.nav-icon {
+    font-size: 1.3rem;
+}
+
+.nav-label {
+    font-size: 0.7rem;
+}

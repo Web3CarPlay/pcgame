@@ -36,6 +36,8 @@ func SetupUserRoutes(r *gin.RouterGroup, db *gorm.DB) {
 		player.GET("/me", h.GetCurrentPlayer)
 		player.GET("/invite-code", h.GetInviteCode)
 		player.GET("/referrals", h.GetReferrals)
+		player.GET("/referral-stats", h.GetReferralStats)
+		player.GET("/earnings", h.GetEarnings)
 	}
 }
 
@@ -112,7 +114,7 @@ func (h *UserHandler) GetInviteCode(c *gin.Context) {
 	})
 }
 
-// GetReferrals returns users invited by the current user
+// GetReferrals returns users invited by the current user with bet statistics
 func (h *UserHandler) GetReferrals(c *gin.Context) {
 	userID, ok := GetUserIDFromContext(c)
 	if !ok {
@@ -122,7 +124,160 @@ func (h *UserHandler) GetReferrals(c *gin.Context) {
 
 	var referrals []model.User
 	h.db.Where("referrer_id = ?", userID).Find(&referrals)
-	c.JSON(200, referrals)
+
+	// Calculate bet statistics for each referral
+	type ReferralWithStats struct {
+		ID        uint    `json:"id"`
+		Username  string  `json:"username"`
+		TotalBet  float64 `json:"total_bet"`
+		TotalWin  float64 `json:"total_win"`
+		NetLoss   float64 `json:"net_loss"`
+		CreatedAt string  `json:"created_at"`
+	}
+
+	result := make([]ReferralWithStats, 0, len(referrals))
+	for _, r := range referrals {
+		var totalBet, totalWin float64
+		h.db.Model(&model.PC28Bet{}).Where("user_id = ?", r.ID).
+			Select("COALESCE(SUM(amount), 0)").Scan(&totalBet)
+		h.db.Model(&model.PC28Bet{}).Where("user_id = ? AND status = ?", r.ID, "won").
+			Select("COALESCE(SUM(win_amount), 0)").Scan(&totalWin)
+
+		result = append(result, ReferralWithStats{
+			ID:        r.ID,
+			Username:  r.Username,
+			TotalBet:  totalBet,
+			TotalWin:  totalWin,
+			NetLoss:   totalBet - totalWin, // Customer loss = bet - win
+			CreatedAt: r.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		})
+	}
+
+	c.JSON(200, result)
+}
+
+// GetReferralStats returns summary statistics for the user's referrals
+func (h *UserHandler) GetReferralStats(c *gin.Context) {
+	userID, ok := GetUserIDFromContext(c)
+	if !ok {
+		c.JSON(401, gin.H{"error": "Not authenticated"})
+		return
+	}
+
+	// Get referral IDs
+	var referralIDs []uint
+	h.db.Model(&model.User{}).Where("referrer_id = ?", userID).Pluck("id", &referralIDs)
+
+	totalReferrals := len(referralIDs)
+	var activeReferrals int64
+	var totalCustomerLoss float64
+	commissionRate := 0.1 // Default 10%, can be configured later
+
+	if totalReferrals > 0 {
+		// Count active referrals (those who have placed bets)
+		h.db.Model(&model.PC28Bet{}).Where("user_id IN ?", referralIDs).
+			Distinct("user_id").Count(&activeReferrals)
+
+		// Calculate total customer loss (total bet - total win)
+		var totalBet, totalWin float64
+		h.db.Model(&model.PC28Bet{}).Where("user_id IN ?", referralIDs).
+			Select("COALESCE(SUM(amount), 0)").Scan(&totalBet)
+		h.db.Model(&model.PC28Bet{}).Where("user_id IN ? AND status = ?", referralIDs, "won").
+			Select("COALESCE(SUM(win_amount), 0)").Scan(&totalWin)
+		totalCustomerLoss = totalBet - totalWin
+	}
+
+	totalCommission := totalCustomerLoss * commissionRate
+	if totalCommission < 0 {
+		totalCommission = 0 // No negative commission
+	}
+
+	c.JSON(200, gin.H{
+		"total_referrals":     totalReferrals,
+		"active_referrals":    activeReferrals,
+		"total_customer_loss": totalCustomerLoss,
+		"total_commission":    totalCommission,
+		"commission_rate":     commissionRate,
+	})
+}
+
+// GetEarnings returns daily earnings breakdown
+func (h *UserHandler) GetEarnings(c *gin.Context) {
+	userID, ok := GetUserIDFromContext(c)
+	if !ok {
+		c.JSON(401, gin.H{"error": "Not authenticated"})
+		return
+	}
+
+	startDate := c.Query("start_date")
+	endDate := c.Query("end_date")
+
+	// Get referral IDs
+	var referralIDs []uint
+	h.db.Model(&model.User{}).Where("referrer_id = ?", userID).Pluck("id", &referralIDs)
+
+	commissionRate := 0.1 // Default 10%
+	var totalEarnings float64
+
+	type DailyEarning struct {
+		Date          string  `json:"date"`
+		CustomerLoss  float64 `json:"customer_loss"`
+		Commission    float64 `json:"commission"`
+		ReferralCount int     `json:"referral_count"`
+	}
+
+	dailyEarnings := make([]DailyEarning, 0)
+
+	if len(referralIDs) > 0 {
+		// Get daily breakdown
+		query := h.db.Model(&model.PC28Bet{}).
+			Select("DATE(created_at) as bet_date, SUM(amount) as total_bet, "+
+				"SUM(CASE WHEN status = 'won' THEN win_amount ELSE 0 END) as total_win, "+
+				"COUNT(DISTINCT user_id) as user_count").
+			Where("user_id IN ?", referralIDs).
+			Group("DATE(created_at)").
+			Order("bet_date DESC")
+
+		if startDate != "" {
+			query = query.Where("DATE(created_at) >= ?", startDate)
+		}
+		if endDate != "" {
+			query = query.Where("DATE(created_at) <= ?", endDate)
+		}
+
+		type DailyResult struct {
+			BetDate   string
+			TotalBet  float64
+			TotalWin  float64
+			UserCount int
+		}
+
+		var results []DailyResult
+		query.Scan(&results)
+
+		for _, r := range results {
+			loss := r.TotalBet - r.TotalWin
+			commission := loss * commissionRate
+			if commission < 0 {
+				commission = 0
+			}
+			totalEarnings += commission
+
+			dailyEarnings = append(dailyEarnings, DailyEarning{
+				Date:          r.BetDate,
+				CustomerLoss:  loss,
+				Commission:    commission,
+				ReferralCount: r.UserCount,
+			})
+		}
+	}
+
+	c.JSON(200, gin.H{
+		"total_earnings":   totalEarnings,
+		"pending_earnings": 0, // Placeholder for future implementation
+		"settled_earnings": totalEarnings,
+		"daily_earnings":   dailyEarnings,
+	})
 }
 
 // ==========================================
