@@ -62,7 +62,11 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, hub *ws.Hub, logger *zap.SugaredLog
 	// API v1
 	v1 := r.Group("/api/v1")
 	{
-		// Game routes (public)
+		// ==========================================
+		// Public Routes (No Auth Required)
+		// ==========================================
+
+		// Game info routes
 		games := v1.Group("/games/pc28")
 		{
 			games.GET("/round/current", h.GetCurrentRound)
@@ -70,20 +74,32 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, hub *ws.Hub, logger *zap.SugaredLog
 			games.GET("/odds", h.GetOdds)
 		}
 
-		// Bet routes (public for now, should be authenticated)
-		v1.POST("/bets", h.PlaceBet)
-		v1.GET("/bets", h.GetUserBets)
-
-		// User auth routes (public)
+		// Player auth routes (public)
 		v1.POST("/auth/register", userHandler.Register)
+		v1.POST("/auth/login", userHandler.Login)
 
-		// User routes
-		SetupUserRoutes(v1, db)
-
-		// Admin authentication routes
+		// Admin auth routes (public)
 		SetupAdminUserRoutes(v1, db)
 
-		// Admin protected routes
+		// ==========================================
+		// Player Protected Routes
+		// ==========================================
+
+		// Bet routes (player authenticated)
+		bets := v1.Group("/bets")
+		bets.Use(PlayerAuthMiddleware(db))
+		{
+			bets.POST("", h.PlaceBet)
+			bets.GET("", h.GetUserBets)
+		}
+
+		// Player routes
+		SetupUserRoutes(v1, db)
+
+		// ==========================================
+		// Admin Protected Routes
+		// ==========================================
+
 		admin := v1.Group("/admin")
 		admin.Use(AuthMiddleware(db))
 		{
@@ -138,8 +154,12 @@ func (h *Handler) PlaceBet(c *gin.Context) {
 		return
 	}
 
-	// TODO: Get user from JWT token
-	userID := uint(1) // Placeholder
+	// Get user from context (set by PlayerAuthMiddleware)
+	userID, ok := GetUserIDFromContext(c)
+	if !ok {
+		c.JSON(401, gin.H{"error": "Not authenticated"})
+		return
+	}
 
 	// Verify round is open
 	var round model.PC28Round
@@ -208,8 +228,12 @@ func (h *Handler) PlaceBet(c *gin.Context) {
 
 // GetUserBets returns user's bet history
 func (h *Handler) GetUserBets(c *gin.Context) {
-	// TODO: Get user from JWT token
-	userID := uint(1) // Placeholder
+	// Get user from context
+	userID, ok := GetUserIDFromContext(c)
+	if !ok {
+		c.JSON(401, gin.H{"error": "Not authenticated"})
+		return
+	}
 
 	var bets []model.PC28Bet
 	h.db.Where("user_id = ?", userID).

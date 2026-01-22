@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 
 	"pcgame/backend/internal/model"
@@ -10,31 +11,31 @@ import (
 	"gorm.io/gorm"
 )
 
+// ==========================================
+// Admin Authentication Middleware
+// ==========================================
+
 // AuthMiddleware checks for valid admin authentication
 func AuthMiddleware(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Get token from header
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
+		token := extractToken(c)
+		if token == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Missing authorization header"})
 			c.Abort()
 			return
 		}
 
-		// Extract token (Bearer <token>)
-		parts := strings.Split(authHeader, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization format"})
+		// Token format: admin_<id> for now
+		// TODO: Implement proper JWT validation
+		var admin model.AdminUser
+		adminID, err := strconv.ParseUint(token, 10, 64)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()
 			return
 		}
 
-		token := parts[1]
-
-		// TODO: Implement proper JWT validation
-		// For now, use simple token = admin_id mapping for development
-		var admin model.AdminUser
-		if err := db.Where("id = ?", token).First(&admin).Error; err != nil {
+		if err := db.First(&admin, adminID).Error; err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()
 			return
@@ -53,6 +54,62 @@ func AuthMiddleware(db *gorm.DB) gin.HandlerFunc {
 
 		c.Next()
 	}
+}
+
+// ==========================================
+// Player Authentication Middleware
+// ==========================================
+
+// PlayerAuthMiddleware checks for valid player authentication
+func PlayerAuthMiddleware(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		token := extractToken(c)
+		if token == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Missing authorization header"})
+			c.Abort()
+			return
+		}
+
+		// Token format: player_<id> for now
+		// TODO: Implement proper JWT validation
+		var user model.User
+		userID, err := strconv.ParseUint(token, 10, 64)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+			c.Abort()
+			return
+		}
+
+		if err := db.First(&user, userID).Error; err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+			c.Abort()
+			return
+		}
+
+		// Set user info in context
+		c.Set("user_id", user.ID)
+		c.Set("user", user)
+
+		c.Next()
+	}
+}
+
+// ==========================================
+// Helper Functions
+// ==========================================
+
+func extractToken(c *gin.Context) string {
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		return ""
+	}
+
+	parts := strings.Split(authHeader, " ")
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		return ""
+	}
+
+	return parts[1]
 }
 
 // RequireRole middleware checks if admin has required role
@@ -94,6 +151,25 @@ func GetAdminFromContext(c *gin.Context) (*model.AdminUser, bool) {
 	}
 	a := admin.(model.AdminUser)
 	return &a, true
+}
+
+// GetUserFromContext returns the current user from context
+func GetUserFromContext(c *gin.Context) (*model.User, bool) {
+	user, exists := c.Get("user")
+	if !exists {
+		return nil, false
+	}
+	u := user.(model.User)
+	return &u, true
+}
+
+// GetUserIDFromContext returns the current user ID from context
+func GetUserIDFromContext(c *gin.Context) (uint, bool) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		return 0, false
+	}
+	return userID.(uint), true
 }
 
 // IsSuperAdmin checks if current admin is super admin

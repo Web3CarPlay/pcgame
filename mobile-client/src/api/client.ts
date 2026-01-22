@@ -6,18 +6,63 @@ export interface ApiResponse<T> {
     error?: string;
 }
 
+// Token management
+function getToken(): string | null {
+    const stored = localStorage.getItem('player_token');
+    if (stored) {
+        try {
+            return JSON.parse(stored);
+        } catch {
+            return stored;
+        }
+    }
+    return null;
+}
+
+function setToken(token: string | null) {
+    if (token) {
+        localStorage.setItem('player_token', JSON.stringify(token));
+    } else {
+        localStorage.removeItem('player_token');
+    }
+}
+
+function clearAuth() {
+    localStorage.removeItem('player_token');
+    localStorage.removeItem('player_user');
+}
+
+// Request helper with auth
 async function request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    requireAuth: boolean = false
 ): Promise<ApiResponse<T>> {
     try {
+        const token = getToken();
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+            ...(options.headers as Record<string, string>),
+        };
+
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        } else if (requireAuth) {
+            // Redirect to login if token required but missing
+            window.location.href = '/login';
+            return { error: 'Not authenticated' };
+        }
+
         const response = await fetch(`${API_BASE}${endpoint}`, {
             ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers,
-            },
+            headers,
         });
+
+        if (response.status === 401) {
+            clearAuth();
+            window.location.href = '/login';
+            return { error: 'Unauthorized' };
+        }
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
@@ -31,24 +76,100 @@ async function request<T>(
     }
 }
 
-// Game API
+// ==========================================
+// Auth API (Public)
+// ==========================================
+
+export interface LoginResponse {
+    token: string;
+    user: {
+        id: number;
+        username: string;
+        balance: number;
+        invite_code: string;
+    };
+}
+
+export const authApi = {
+    login: async (username: string, password: string): Promise<ApiResponse<LoginResponse>> => {
+        const res = await request<LoginResponse>('/api/v1/auth/login', {
+            method: 'POST',
+            body: JSON.stringify({ username, password }),
+        });
+        if (res.data) {
+            setToken(String(res.data.token));
+            localStorage.setItem('player_user', JSON.stringify(res.data.user));
+        }
+        return res;
+    },
+
+    register: async (
+        username: string,
+        password: string,
+        operatorCode?: string,
+        referrerCode?: string
+    ): Promise<ApiResponse<LoginResponse>> => {
+        const res = await request<LoginResponse>('/api/v1/auth/register', {
+            method: 'POST',
+            body: JSON.stringify({
+                username,
+                password,
+                operator_code: operatorCode,
+                referrer_code: referrerCode,
+            }),
+        });
+        if (res.data) {
+            setToken(String(res.data.token));
+            localStorage.setItem('player_user', JSON.stringify(res.data.user));
+        }
+        return res;
+    },
+
+    logout: () => {
+        clearAuth();
+        window.location.href = '/login';
+    },
+
+    isAuthenticated: () => !!getToken(),
+};
+
+// ==========================================
+// Game API (Public)
+// ==========================================
+
 export const gameApi = {
     getCurrentRound: () => request<any>('/api/v1/games/pc28/round/current'),
     getHistory: () => request<any[]>('/api/v1/games/pc28/history'),
     getOdds: () => request<Record<string, number>>('/api/v1/games/pc28/odds'),
 };
 
-// Bet API
+// ==========================================
+// Bet API (Authenticated)
+// ==========================================
+
 export const betApi = {
     placeBet: (data: { round_id: number; bet_type: string; bet_value?: number; amount: number }) =>
         request<any>('/api/v1/bets', {
             method: 'POST',
             body: JSON.stringify(data),
-        }),
-    getUserBets: () => request<any[]>('/api/v1/bets'),
+        }, true),
+    getUserBets: () => request<any[]>('/api/v1/bets', {}, true),
 };
 
+// ==========================================
+// Player API (Authenticated)
+// ==========================================
+
+export const playerApi = {
+    getMe: () => request<any>('/api/v1/player/me', {}, true),
+    getInviteCode: () => request<{ invite_code: string; invite_url: string }>('/api/v1/player/invite-code', {}, true),
+    getReferrals: () => request<any[]>('/api/v1/player/referrals', {}, true),
+};
+
+// ==========================================
 // WebSocket
+// ==========================================
+
 export function createWebSocket(onMessage: (msg: any) => void): WebSocket {
     const ws = new WebSocket(`${WS_BASE}/ws`);
 

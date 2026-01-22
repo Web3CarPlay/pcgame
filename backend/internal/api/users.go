@@ -4,6 +4,7 @@ import (
 	"pcgame/backend/internal/model"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -21,11 +22,20 @@ func NewUserHandler(db *gorm.DB) *UserHandler {
 func SetupUserRoutes(r *gin.RouterGroup, db *gorm.DB) {
 	h := NewUserHandler(db)
 
+	// Admin-only routes (list users)
 	users := r.Group("/users")
+	users.Use(AuthMiddleware(db))
 	{
-		users.GET("", AuthMiddleware(db), h.List)
-		users.GET("/invite-code", h.GetInviteCode)
-		users.GET("/referrals", h.GetReferrals)
+		users.GET("", h.List)
+	}
+
+	// Player routes (authenticated)
+	player := r.Group("/player")
+	player.Use(PlayerAuthMiddleware(db))
+	{
+		player.GET("/me", h.GetCurrentPlayer)
+		player.GET("/invite-code", h.GetInviteCode)
+		player.GET("/referrals", h.GetReferrals)
 	}
 }
 
@@ -50,7 +60,6 @@ func (h *UserHandler) List(c *gin.Context) {
 		query.Where("operator_id IN ?", operatorIDs).Find(&users)
 	case model.RoleOperator:
 		// TODO: Operator role can only see users in their operator
-		// For now, return empty
 		users = []model.User{}
 	default:
 		c.JSON(403, gin.H{"error": "Access denied"})
@@ -67,10 +76,29 @@ func (h *UserHandler) List(c *gin.Context) {
 	c.JSON(200, users)
 }
 
+// GetCurrentPlayer returns the current player info
+func (h *UserHandler) GetCurrentPlayer(c *gin.Context) {
+	user, ok := GetUserFromContext(c)
+	if !ok {
+		c.JSON(401, gin.H{"error": "Not authenticated"})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"id":          user.ID,
+		"username":    user.Username,
+		"balance":     user.Balance,
+		"invite_code": user.InviteCode,
+	})
+}
+
 // GetInviteCode returns the current user's invite code
 func (h *UserHandler) GetInviteCode(c *gin.Context) {
-	// TODO: Get user from JWT token
-	userID := uint(1) // Placeholder
+	userID, ok := GetUserIDFromContext(c)
+	if !ok {
+		c.JSON(401, gin.H{"error": "Not authenticated"})
+		return
+	}
 
 	var user model.User
 	if err := h.db.First(&user, userID).Error; err != nil {
@@ -78,7 +106,6 @@ func (h *UserHandler) GetInviteCode(c *gin.Context) {
 		return
 	}
 
-	// Generate invite URL
 	baseURL := c.GetHeader("Origin")
 	if baseURL == "" {
 		baseURL = "http://localhost:5174"
@@ -92,13 +119,59 @@ func (h *UserHandler) GetInviteCode(c *gin.Context) {
 
 // GetReferrals returns users invited by the current user
 func (h *UserHandler) GetReferrals(c *gin.Context) {
-	// TODO: Get user from JWT token
-	userID := uint(1) // Placeholder
+	userID, ok := GetUserIDFromContext(c)
+	if !ok {
+		c.JSON(401, gin.H{"error": "Not authenticated"})
+		return
+	}
 
 	var referrals []model.User
 	h.db.Where("referrer_id = ?", userID).Find(&referrals)
 
 	c.JSON(200, referrals)
+}
+
+// ==========================================
+// Player Auth Routes
+// ==========================================
+
+// LoginRequest represents a login request
+type PlayerLoginRequest struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+// Login handles player login
+func (h *UserHandler) Login(c *gin.Context) {
+	var req PlayerLoginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	var user model.User
+	if err := h.db.Where("username = ?", req.Username).First(&user).Error; err != nil {
+		c.JSON(401, gin.H{"error": "Invalid credentials"})
+		return
+	}
+
+	// Verify password
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+		c.JSON(401, gin.H{"error": "Invalid credentials"})
+		return
+	}
+
+	// TODO: Generate proper JWT token
+	// For now, return user ID as token
+	c.JSON(200, gin.H{
+		"token": user.ID,
+		"user": gin.H{
+			"id":          user.ID,
+			"username":    user.Username,
+			"balance":     user.Balance,
+			"invite_code": user.InviteCode,
+		},
+	})
 }
 
 // RegisterRequest represents a user registration request
@@ -117,10 +190,17 @@ func (h *UserHandler) Register(c *gin.Context) {
 		return
 	}
 
+	// Hash password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to hash password"})
+		return
+	}
+
 	user := model.User{
 		Username: req.Username,
-		Password: req.Password, // TODO: Hash password
-		Balance:  1000,         // Initial balance for testing
+		Password: string(hashedPassword),
+		Balance:  1000, // Initial balance for testing
 	}
 
 	// Handle referrer code
@@ -128,7 +208,6 @@ func (h *UserHandler) Register(c *gin.Context) {
 		var referrer model.User
 		if err := h.db.Where("invite_code = ?", req.ReferrerCode).First(&referrer).Error; err == nil {
 			user.ReferrerID = &referrer.ID
-			// Inherit operator from referrer
 			if referrer.OperatorID != nil {
 				user.OperatorID = referrer.OperatorID
 			}
@@ -148,11 +227,14 @@ func (h *UserHandler) Register(c *gin.Context) {
 		return
 	}
 
+	// Return token after registration (auto-login)
 	c.JSON(201, gin.H{
-		"id":          user.ID,
-		"username":    user.Username,
-		"invite_code": user.InviteCode,
-		"operator_id": user.OperatorID,
-		"referrer_id": user.ReferrerID,
+		"token": user.ID,
+		"user": gin.H{
+			"id":          user.ID,
+			"username":    user.Username,
+			"balance":     user.Balance,
+			"invite_code": user.InviteCode,
+		},
 	})
 }

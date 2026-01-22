@@ -1,32 +1,33 @@
 import { atom } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
 
 // Auth State
-export interface User {
+export interface PlayerUser {
     id: number;
     username: string;
     balance: number;
+    invite_code: string;
 }
 
-export const userAtom = atom<User | null>(null);
-export const isAuthenticatedAtom = atom((get) => get(userAtom) !== null);
+export const playerTokenAtom = atomWithStorage<string | null>('player_token', null);
+export const playerUserAtom = atomWithStorage<PlayerUser | null>('player_user', null);
+export const isAuthenticatedAtom = atom((get) => get(playerTokenAtom) !== null);
 
 // Game State
-export interface Round {
+export interface GameRound {
     id: number;
     issue_number: string;
-    keno_data: string;
-    result_a: number;
-    result_b: number;
-    result_c: number;
-    sum: number;
-    open_time: string;
-    close_time: string;
     status: string;
+    sum?: number;
+    result_a?: number;
+    result_b?: number;
+    result_c?: number;
+    close_time: string;
 }
 
-export const currentRoundAtom = atom<Round | null>(null);
+export const currentRoundAtom = atom<GameRound | null>(null);
 export const countdownAtom = atom<number>(0);
-export const historyAtom = atom<Round[]>([]);
+export const historyAtom = atom<GameRound[]>([]);
 
 // Betting State
 export interface BetSelection {
@@ -35,8 +36,8 @@ export interface BetSelection {
     amount: number;
 }
 
-export const selectedBetsAtom = atom<BetSelection[]>([]);
-export const chipAmountAtom = atom<number>(10);
+export const selectedChipAtom = atom<number>(10);
+export const betSelectionsAtom = atom<BetSelection[]>([]);
 
-// WebSocket State
-export const wsConnectedAtom = atom<boolean>(false);
+// UI State
+export const isLoadingAtom = atom<boolean>(false);
