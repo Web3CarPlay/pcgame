@@ -28,9 +28,9 @@ export default function Home() {
                     <p>经典竞猜游戏，大奖等你来拿！</p>
                 </div>
 
-                <Link to="/game" className="play-btn">
-                    <span className="play-icon">🎲</span>
-                    <span>立即投注</span>
+                <Link to="/lobby" className="play-btn">
+                    <span className="play-icon">🎮</span>
+                    <span>进入游戏大厅</span>
                 </Link>
 
                 <div className="features">
@@ -57,9 +57,9 @@ export default function Home() {
                     <span className="nav-icon">🏠</span>
                     <span>首页</span>
                 </Link>
-                <Link to="/game" className="nav-item">
-                    <span className="nav-icon">🎲</span>
-                    <span>投注</span>
+                <Link to="/lobby" className="nav-item">
+                    <span className="nav-icon">🎮</span>
+                    <span>游戏</span>
                 </Link>
                 <Link to="/history" className="nav-item">
                     <span className="nav-icon">📋</span>

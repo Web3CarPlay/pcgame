@@ -4,6 +4,7 @@ import { useAtomValue } from 'jotai';
 import { isAuthenticatedAtom } from './store/atoms';
 import Login from './pages/Login';
 import Home from './pages/Home';
+import GameLobby from './pages/GameLobby';
 import Game from './pages/Game';
 import History from './pages/History';
 import Profile from './pages/Profile';
@@ -42,6 +43,14 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <Home />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/lobby',
+    element: (
+      <ProtectedRoute>
+        <GameLobby />
       </ProtectedRoute>
     ),
   },
