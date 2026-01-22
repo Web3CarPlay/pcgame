@@ -10,6 +10,7 @@ export default function Layout() {
         { path: '/', icon: '📊', label: '仪表盘' },
         { path: '/rounds', icon: '🎲', label: '轮次管理' },
         { path: '/users', icon: '👥', label: '用户管理' },
+        { path: '/operators', icon: '🏢', label: '运营者管理' },
         { path: '/settings', icon: '⚙️', label: '设置' },
     ];
 

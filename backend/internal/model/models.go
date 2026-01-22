@@ -1,18 +1,51 @@
 package model
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"time"
 
 	"gorm.io/gorm"
 )
 
+// Operator represents a business operator (运营者)
+type Operator struct {
+	gorm.Model
+	Code       string  `gorm:"uniqueIndex;size:20;not null" json:"code"` // 唯一标识码
+	Name       string  `gorm:"size:100;not null" json:"name"`            // 运营者名称
+	Commission float64 `gorm:"default:0" json:"commission"`              // 佣金比例
+	Status     string  `gorm:"size:20;default:'active'" json:"status"`   // active, disabled
+	UserCount  int     `gorm:"-" json:"user_count"`                      // 计算字段
+}
+
 // User represents a player in the system
 type User struct {
 	gorm.Model
-	Username string  `gorm:"uniqueIndex;size:50;not null" json:"username"`
-	Password string  `gorm:"size:255;not null" json:"-"`
-	Balance  float64 `gorm:"default:0" json:"balance"`
-	Role     string  `gorm:"size:20;default:'user'" json:"role"` // user, admin
+	Username    string    `gorm:"uniqueIndex;size:50;not null" json:"username"`
+	Password    string    `gorm:"size:255;not null" json:"-"`
+	Balance     float64   `gorm:"default:0" json:"balance"`
+	Role        string    `gorm:"size:20;default:'user'" json:"role"` // user, admin
+	OperatorID  *uint     `gorm:"index" json:"operator_id"`           // 归属运营者
+	Operator    *Operator `gorm:"foreignKey:OperatorID" json:"operator,omitempty"`
+	ReferrerID  *uint     `gorm:"index" json:"referrer_id"` // 邀请人
+	Referrer    *User     `gorm:"foreignKey:ReferrerID" json:"referrer,omitempty"`
+	InviteCode  string    `gorm:"uniqueIndex;size:20" json:"invite_code"` // 自己的邀请码
+	InviteCount int       `gorm:"-" json:"invite_count"`                  // 邀请人数 (计算字段)
+}
+
+// BeforeCreate generates invite code for new users
+func (u *User) BeforeCreate(tx *gorm.DB) error {
+	if u.InviteCode == "" {
+		u.InviteCode = generateInviteCode()
+	}
+	return nil
+}
+
+// generateInviteCode generates a random 8-character invite code
+func generateInviteCode() string {
+	bytes := make([]byte, 4)
+	rand.Read(bytes)
+	return hex.EncodeToString(bytes)
 }
 
 // RoundStatus represents the status of a game round

@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Rounds from './pages/Rounds';
 import Users from './pages/Users';
+import Operators from './pages/Operators';
 import Settings from './pages/Settings';
 import './App.css';
 
@@ -17,6 +18,7 @@ const router = createBrowserRouter([
       { index: true, element: <Dashboard /> },
       { path: 'rounds', element: <Rounds /> },
       { path: 'users', element: <Users /> },
+      { path: 'operators', element: <Operators /> },
       { path: 'settings', element: <Settings /> },
     ],
   },

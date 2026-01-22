@@ -29,6 +29,7 @@ func InitDB(cfg *config.Config) (*gorm.DB, error) {
 
 func AutoMigrate(db *gorm.DB) error {
 	return db.AutoMigrate(
+		&Operator{},
 		&User{},
 		&PC28Round{},
 		&PC28Bet{},

@@ -90,6 +90,91 @@
     padding-bottom: 100px;
 }
 
+/* Invite Section */
+.invite-section {
+    margin-bottom: 24px;
+}
+
+.section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.invite-card {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(168, 85, 247, 0.2));
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.invite-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 16px;
+}
+
+.invite-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.invite-stat .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #a855f7;
+}
+
+.invite-stat .stat-label {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.invite-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: #fff;
+    font-weight: 600;
+    font-size: 1rem;
+    border: none;
+}
+
+.referrals-list {
+    margin-top: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.referrals-list h4 {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 12px;
+}
+
+.referral-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.referral-item:last-child {
+    border-bottom: none;
+}
+
+.referral-name {
+    font-weight: 500;
+}
+
+.referral-balance {
+    color: #00d4aa;
+}
+
 .menu-section {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 16px;

@@ -40,6 +40,7 @@ func NewHandler(db *gorm.DB, hub *ws.Hub, logger *zap.SugaredLogger) *Handler {
 // SetupRoutes sets up all API routes
 func SetupRoutes(r *gin.Engine, db *gorm.DB, hub *ws.Hub, logger *zap.SugaredLogger) {
 	h := NewHandler(db, hub, logger)
+	userHandler := NewUserHandler(db)
 
 	// CORS middleware
 	r.Use(func(c *gin.Context) {
@@ -72,6 +73,18 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, hub *ws.Hub, logger *zap.SugaredLog
 		// Bet routes
 		v1.POST("/bets", h.PlaceBet)
 		v1.GET("/bets", h.GetUserBets)
+
+		// Auth routes
+		v1.POST("/auth/register", userHandler.Register)
+
+		// User routes
+		SetupUserRoutes(v1, db)
+
+		// Admin routes
+		admin := v1.Group("/admin")
+		{
+			SetupOperatorRoutes(admin, db)
+		}
 	}
 
 	// WebSocket
