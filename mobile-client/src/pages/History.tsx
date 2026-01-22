@@ -85,25 +85,6 @@ export default function History() {
                     </div>
                 )}
             </div>
-
-            <nav className="bottom-nav">
-                <Link to="/" className="nav-item">
-                    <span className="nav-icon">🏠</span>
-                    <span>首页</span>
-                </Link>
-                <Link to="/game" className="nav-item">
-                    <span className="nav-icon">🎲</span>
-                    <span>投注</span>
-                </Link>
-                <Link to="/history" className="nav-item active">
-                    <span className="nav-icon">📋</span>
-                    <span>记录</span>
-                </Link>
-                <Link to="/profile" className="nav-item">
-                    <span className="nav-icon">👤</span>
-                    <span>我的</span>
-                </Link>
-            </nav>
         </div>
     );
 }

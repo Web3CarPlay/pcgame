@@ -1,0 +1,168 @@
+/* =========================================
+   Layout Component Styles
+   ========================================= */
+
+/* Desktop Sidebar */
+.app-sidebar {
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(180deg, var(--color-bg-secondary) 0%, var(--color-bg-primary) 100%);
+    padding: 24px 0;
+}
+
+.sidebar-header {
+    padding: 0 20px 24px;
+    border-bottom: var(--border-subtle);
+    margin-bottom: 24px;
+}
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sidebar-logo {
+    font-size: 2rem;
+}
+
+.sidebar-brand h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    margin: 0 12px 24px;
+    background: var(--color-bg-card);
+    border: var(--border-gold);
+    border-radius: var(--radius-lg);
+}
+
+.user-avatar {
+    width: 44px;
+    height: 44px;
+    background: var(--color-gold-gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--color-bg-primary);
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.user-balance {
+    font-size: 0.85rem;
+    color: var(--color-success);
+    font-weight: 600;
+}
+
+.sidebar-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0 12px;
+}
+
+.sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    color: var(--color-text-secondary);
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.sidebar-nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-text-primary);
+}
+
+.sidebar-nav-item.active {
+    background: linear-gradient(135deg, rgba(245, 175, 25, 0.15) 0%, rgba(245, 175, 25, 0.05) 100%);
+    color: var(--color-gold-primary);
+    border: 1px solid rgba(245, 175, 25, 0.2);
+}
+
+.sidebar-nav-item .nav-icon {
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+}
+
+.sidebar-nav-item .nav-label {
+    font-size: 0.95rem;
+}
+
+.sidebar-footer {
+    padding: 20px;
+    border-top: var(--border-subtle);
+    margin-top: 24px;
+}
+
+.sidebar-copyright {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-align: center;
+}
+
+/* Mobile Bottom Navigation */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    background: rgba(10, 10, 15, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: var(--border-subtle);
+    padding: 8px 0;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    z-index: 1000;
+}
+
+.bottom-nav .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 0;
+    color: var(--color-text-muted);
+    font-size: 0.7rem;
+    transition: color 0.2s;
+    text-decoration: none;
+}
+
+.bottom-nav .nav-item.active {
+    color: var(--color-gold-primary);
+}
+
+.bottom-nav .nav-item .nav-icon {
+    font-size: 1.4rem;
+}
+
+.bottom-nav .nav-item .nav-label {
+    font-size: 0.68rem;
+    font-weight: 500;
+}

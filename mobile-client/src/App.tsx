@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { useAtomValue } from 'jotai';
 import { isAuthenticatedAtom } from './store/atoms';
+import Layout from './components/Layout';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import GameLobby from './pages/GameLobby';
@@ -11,13 +12,13 @@ import Profile from './pages/Profile';
 import Stats from './pages/Stats';
 import './App.css';
 
-// Protected route wrapper
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
+// Protected route wrapper with Layout
+function ProtectedRoute({ children, hideNav = false }: { children: React.ReactNode; hideNav?: boolean }) {
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-  return <>{children}</>;
+  return <Layout hideNav={hideNav}>{children}</Layout>;
 }
 
 // Public route (redirect if already logged in)

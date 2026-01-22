@@ -249,34 +249,105 @@
     opacity: 0.5;
 }
 
-/* Bottom Nav */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    background: rgba(26, 26, 46, 0.95);
-    backdrop-filter: blur(20px);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 10px 0;
-    padding-bottom: max(10px, env(safe-area-inset-bottom));
+/* =========================================
+   Responsive Styles
+   ========================================= */
+
+/* Tablet */
+@media (min-width: 768px) {
+    .game {
+        padding-bottom: 160px;
+    }
+
+    .countdown-ring {
+        width: 140px;
+        height: 140px;
+    }
+
+    .countdown-number {
+        font-size: 2.4rem;
+    }
+
+    .numbers-grid {
+        grid-template-columns: repeat(7, 1fr);
+        gap: 10px;
+    }
+
+    .number-btn {
+        font-size: 1rem;
+    }
+
+    .chip {
+        width: 60px;
+        height: 60px;
+        font-size: 0.9rem;
+    }
 }
 
-.nav-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 0.7rem;
-}
+/* Desktop */
+@media (min-width: 1024px) {
+    .game {
+        padding-bottom: 100px;
+    }
 
-.nav-item.active {
-    color: #f5af19;
-}
+    .game-header {
+        padding: 20px 32px;
+    }
 
-.nav-icon {
-    font-size: 1.3rem;
+    .countdown-section {
+        padding: 32px;
+    }
+
+    .countdown-ring {
+        width: 160px;
+        height: 160px;
+    }
+
+    .betting-area {
+        padding: 0 32px;
+    }
+
+    .quick-bets {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        max-width: 600px;
+        margin: 0 auto 24px;
+    }
+
+    .quick-btn {
+        padding: 20px 12px;
+        font-size: 1rem;
+    }
+
+    .numbers-grid {
+        grid-template-columns: repeat(10, 1fr);
+        gap: 10px;
+        max-width: 700px;
+        margin: 0 auto 24px;
+    }
+
+    .number-btn {
+        font-size: 1.1rem;
+    }
+
+    .chip-selector {
+        gap: 16px;
+        padding: 20px;
+    }
+
+    .chip {
+        width: 70px;
+        height: 70px;
+        font-size: 1rem;
+    }
+
+    .confirm-bar {
+        bottom: 0;
+        padding: 16px 32px;
+        max-width: 900px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
 }

@@ -51,25 +51,6 @@ export default function Home() {
                     </div>
                 </div>
             </main>
-
-            <nav className="bottom-nav">
-                <Link to="/" className="nav-item active">
-                    <span className="nav-icon">🏠</span>
-                    <span>首页</span>
-                </Link>
-                <Link to="/lobby" className="nav-item">
-                    <span className="nav-icon">🎮</span>
-                    <span>游戏</span>
-                </Link>
-                <Link to="/history" className="nav-item">
-                    <span className="nav-icon">📋</span>
-                    <span>记录</span>
-                </Link>
-                <Link to="/profile" className="nav-item">
-                    <span className="nav-icon">👤</span>
-                    <span>我的</span>
-                </Link>
-            </nav>
         </div>
     );
 }

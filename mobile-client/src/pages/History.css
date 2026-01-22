@@ -119,34 +119,65 @@
     font-size: 0.85rem;
 }
 
-/* Bottom Nav */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    background: rgba(26, 26, 46, 0.95);
-    backdrop-filter: blur(20px);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 10px 0;
-    padding-bottom: max(10px, env(safe-area-inset-bottom));
+/* =========================================
+   Responsive Styles
+   ========================================= */
+
+/* Tablet */
+@media (min-width: 768px) {
+    .history-header {
+        padding: 20px 28px;
+    }
+
+    .history-content {
+        padding: 28px;
+        padding-bottom: 40px;
+    }
+
+    .bet-card {
+        padding: 20px;
+    }
+
+    .bet-type {
+        font-size: 1.05rem;
+    }
 }
 
-.nav-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 0.7rem;
-}
+/* Desktop */
+@media (min-width: 1024px) {
+    .history {
+        padding-bottom: 0;
+    }
 
-.nav-item.active {
-    color: #f5af19;
-}
+    .history-header {
+        padding: 24px 32px;
+    }
 
-.nav-icon {
-    font-size: 1.3rem;
+    .history-content {
+        padding: 32px;
+        padding-bottom: 32px;
+    }
+
+    .bet-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    .bet-card {
+        padding: 20px 24px;
+    }
+
+    .bet-type {
+        font-size: 1.1rem;
+    }
+
+    .bet-result {
+        min-width: 100px;
+    }
+
+    .win,
+    .lose {
+        font-size: 1.1rem;
+    }
 }

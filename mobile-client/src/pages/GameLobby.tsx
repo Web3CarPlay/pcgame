@@ -79,26 +79,6 @@ export default function GameLobby() {
                     ))}
                 </div>
             </div>
-
-            {/* Bottom Navigation */}
-            <nav className="bottom-nav">
-                <Link to="/" className="nav-item">
-                    <span className="nav-icon">🏠</span>
-                    <span className="nav-label">首页</span>
-                </Link>
-                <Link to="/lobby" className="nav-item active">
-                    <span className="nav-icon">🎮</span>
-                    <span className="nav-label">游戏</span>
-                </Link>
-                <Link to="/history" className="nav-item">
-                    <span className="nav-icon">📜</span>
-                    <span className="nav-label">记录</span>
-                </Link>
-                <Link to="/profile" className="nav-item">
-                    <span className="nav-icon">👤</span>
-                    <span className="nav-label">我的</span>
-                </Link>
-            </nav>
         </div>
     );
 }

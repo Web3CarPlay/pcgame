@@ -1,273 +1,555 @@
+/* =========================================
+   Profile Page - Premium Black-Gold Theme
+   ========================================= */
+
 .profile-page {
     min-height: 100vh;
-    background: linear-gradient(180deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%);
-    padding-bottom: 90px;
+    background: var(--color-bg-primary);
 }
 
-.profile-header {
-    background: linear-gradient(135deg, rgba(245, 175, 25, 0.15), rgba(196, 136, 26, 0.1));
-    padding: 24px 20px;
+/* =========================================
+   User Hero Section
+   ========================================= */
+
+.profile-hero {
+    position: relative;
+    padding: 32px 20px 40px;
+    overflow: hidden;
 }
 
-.user-card {
+.profile-hero-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(245, 175, 25, 0.15) 0%, rgba(196, 136, 26, 0.08) 50%, transparent 100%);
+}
+
+.profile-hero-bg::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -30%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(245, 175, 25, 0.2) 0%, transparent 70%);
+    border-radius: 50%;
+}
+
+.profile-hero-content {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: 20px;
 }
 
-.avatar {
-    width: 64px;
-    height: 64px;
+.user-avatar-wrapper {
+    position: relative;
+}
+
+.user-avatar {
+    width: 72px;
+    height: 72px;
     border-radius: 50%;
     background: var(--color-gold-gradient);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.8rem;
+    font-size: 2rem;
     font-weight: 700;
-    color: #0a0a0f;
+    color: var(--color-bg-primary);
+    box-shadow: 0 8px 24px rgba(245, 175, 25, 0.35);
+    border: 3px solid rgba(245, 175, 25, 0.5);
 }
 
-.user-info h2 {
-    font-size: 1.3rem;
-    font-weight: 600;
+.user-level {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    background: linear-gradient(135deg, #f5af19, #f8c842);
+    color: var(--color-bg-primary);
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.user-details {
+    flex: 1;
+}
+
+.user-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: 8px;
+}
+
+.user-balance-display {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.user-balance-display .balance-label {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.user-balance-display .balance-amount {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--color-success);
+}
+
+/* =========================================
+   Profile Content
+   ========================================= */
+
+.profile-content {
+    padding: 0 16px 100px;
+    margin-top: -16px;
+}
+
+/* =========================================
+   Invite Card
+   ========================================= */
+
+.invite-card {
+    background: linear-gradient(145deg, var(--color-bg-card) 0%, rgba(30, 30, 45, 0.95) 100%);
+    border: var(--border-gold);
+    border-radius: var(--radius-xl);
+    padding: 24px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.invite-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(245, 175, 25, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.invite-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.invite-icon {
+    font-size: 2.2rem;
+    line-height: 1;
+}
+
+.invite-header-text h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
     margin-bottom: 4px;
 }
 
-.user-id {
+.invite-header-text p {
     font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--color-text-muted);
+    line-height: 1.4;
 }
 
-.balance-card {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    padding: 20px;
-}
-
-.balance-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.invite-code-display {
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    text-align: center;
     margin-bottom: 16px;
+    border: 1px dashed rgba(245, 175, 25, 0.3);
 }
 
-.balance-label {
-    color: rgba(255, 255, 255, 0.6);
+.invite-code-label {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
-.balance-value {
+.invite-code-value {
     font-size: 1.6rem;
     font-weight: 700;
-    color: #00d4aa;
+    font-family: 'Monaco', 'Consolas', monospace;
+    background: var(--color-gold-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 3px;
 }
 
-.balance-actions {
+.invite-link-box {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    margin-bottom: 20px;
+}
+
+.invite-link-label {
     display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    margin-bottom: 10px;
+}
+
+.link-icon {
+    font-size: 0.9rem;
+}
+
+.invite-link-content {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.invite-link-text {
+    flex: 1;
+    font-size: 0.82rem;
+    color: var(--color-text-secondary);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    font-family: 'Monaco', 'Consolas', monospace;
+}
+
+.copy-btn {
+    flex-shrink: 0;
+    padding: 12px 20px;
+    background: var(--color-gold-gradient);
+    color: var(--color-bg-primary);
+    font-weight: 700;
+    font-size: 0.85rem;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.copy-btn:hover {
+    box-shadow: var(--shadow-gold);
+    transform: translateY(-1px);
+}
+
+.copy-btn.copied {
+    background: linear-gradient(135deg, var(--color-success), #00b894);
+}
+
+.invite-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 12px;
 }
 
-.action-btn {
-    flex: 1;
-    padding: 12px;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: #fff;
-}
-
-.action-btn.deposit {
-    background: linear-gradient(135deg, #f5af19, #f12711);
-}
-
-.action-btn.withdraw {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.profile-content {
-    padding: 20px;
-    padding-bottom: 100px;
-}
-
-/* Invite Section */
-.invite-section {
-    margin-bottom: 24px;
-}
-
-.section-title {
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 12px;
-    color: rgba(255, 255, 255, 0.9);
-}
-
-.invite-card {
-    background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(168, 85, 247, 0.2));
-    border-radius: 16px;
-    padding: 20px;
-    border: 1px solid rgba(168, 85, 247, 0.3);
-}
-
-.invite-stats {
-    display: flex;
-    justify-content: space-around;
-    margin-bottom: 16px;
-}
-
 .invite-stat {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    text-align: center;
+    padding: 14px 8px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.invite-stat .stat-value {
-    font-size: 1.5rem;
+.invite-stat.highlight {
+    background: linear-gradient(135deg, rgba(245, 175, 25, 0.15) 0%, rgba(245, 175, 25, 0.05) 100%);
+    border-color: rgba(245, 175, 25, 0.25);
+}
+
+.invite-stat .stat-number {
+    display: block;
+    font-size: 1.3rem;
     font-weight: 700;
-    color: #a855f7;
+    color: var(--color-gold-primary);
+    margin-bottom: 4px;
 }
 
 .invite-stat .stat-label {
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
 }
 
-.invite-btn {
-    width: 100%;
-    padding: 14px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #7c3aed, #a855f7);
-    color: #fff;
-    font-weight: 600;
-    font-size: 1rem;
-    border: none;
-}
+/* =========================================
+   Quick Menu
+   ========================================= */
 
-.referrals-list {
-    margin-top: 16px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    padding: 16px;
-}
-
-.referrals-list h4 {
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 12px;
-}
-
-.referral-item {
+.quick-menu {
     display: flex;
-    justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    flex-direction: column;
+    gap: 10px;
 }
 
-.referral-item:last-child {
-    border-bottom: none;
-}
-
-.referral-name {
-    font-weight: 500;
-}
-
-.referral-balance {
-    color: #00d4aa;
-}
-
-.menu-section {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 16px;
-    overflow: hidden;
-    margin-bottom: 24px;
-}
-
-.menu-item {
+.quick-menu-item {
     display: flex;
     align-items: center;
-    padding: 16px 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    transition: background 0.2s;
+    gap: 14px;
+    padding: 18px;
+    background: var(--color-bg-card);
+    border: var(--border-subtle);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease;
+    cursor: pointer;
 }
 
-.menu-item:last-child {
-    border-bottom: none;
+.quick-menu-item:hover {
+    background: var(--color-bg-card-hover);
+    border-color: rgba(245, 175, 25, 0.2);
+    transform: translateX(4px);
 }
 
-.menu-item:active {
-    background: rgba(255, 255, 255, 0.05);
+.quick-menu-item.featured {
+    background: linear-gradient(135deg, rgba(245, 175, 25, 0.12) 0%, rgba(20, 20, 30, 0.95) 100%);
+    border: var(--border-gold);
 }
 
-.menu-icon {
-    font-size: 1.3rem;
-    margin-right: 16px;
+.quick-menu-item.logout {
+    border-color: rgba(255, 71, 87, 0.2);
 }
 
-.menu-label {
-    flex: 1;
-    font-weight: 500;
+.quick-menu-item.logout:hover {
+    background: rgba(255, 71, 87, 0.1);
+    border-color: rgba(255, 71, 87, 0.3);
 }
 
-.menu-arrow {
-    font-size: 1.2rem;
-    color: rgba(255, 255, 255, 0.3);
-}
-
-.menu-item.highlight {
-    background: linear-gradient(135deg, rgba(245, 175, 25, 0.15) 0%, rgba(245, 175, 25, 0.05) 100%);
-    border-bottom-color: rgba(245, 175, 25, 0.15);
-}
-
-.menu-badge {
-    background: var(--color-gold-gradient);
-    color: #0a0a0f;
-    font-size: 0.75rem;
-    font-weight: 700;
-    padding: 2px 10px;
-    border-radius: 12px;
-    margin-right: 8px;
-}
-
-.logout-btn {
-    width: 100%;
-    padding: 16px;
-    border-radius: 12px;
-    background: rgba(241, 39, 17, 0.2);
-    color: #f12711;
-    font-weight: 600;
-    font-size: 1rem;
-}
-
-/* Bottom Nav */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+.menu-item-icon {
+    width: 44px;
+    height: 44px;
     display: flex;
-    background: rgba(26, 26, 46, 0.95);
-    backdrop-filter: blur(20px);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 10px 0;
-    padding-bottom: max(10px, env(safe-area-inset-bottom));
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-md);
 }
 
-.nav-item {
+.quick-menu-item.featured .menu-item-icon {
+    background: rgba(245, 175, 25, 0.15);
+}
+
+.menu-item-content {
     flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    color: rgba(255, 255, 255, 0.5);
+    gap: 2px;
+}
+
+.menu-item-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.menu-item-desc {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+.menu-item-badge {
+    background: var(--color-gold-gradient);
+    color: var(--color-bg-primary);
     font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 12px;
 }
 
-.nav-item.active {
-    color: #f5af19;
-}
-
-.nav-icon {
+.menu-item-arrow {
     font-size: 1.3rem;
+    color: var(--color-text-muted);
+    transition: transform 0.2s;
+}
+
+.quick-menu-item:hover .menu-item-arrow {
+    transform: translateX(4px);
+    color: var(--color-gold-primary);
+}
+
+/* =========================================
+   Responsive Styles
+   ========================================= */
+
+/* Tablet */
+@media (min-width: 768px) {
+    .profile-hero {
+        padding: 40px 28px 48px;
+    }
+
+    .user-avatar {
+        width: 88px;
+        height: 88px;
+        font-size: 2.4rem;
+    }
+
+    .user-name {
+        font-size: 1.7rem;
+    }
+
+    .user-balance-display .balance-amount {
+        font-size: 1.6rem;
+    }
+
+    .profile-content {
+        padding: 0 24px 40px;
+    }
+
+    .invite-card {
+        padding: 28px;
+    }
+
+    .invite-code-value {
+        font-size: 1.8rem;
+    }
+
+    .invite-stats-row {
+        gap: 16px;
+    }
+
+    .invite-stat {
+        padding: 18px 12px;
+    }
+
+    .invite-stat .stat-number {
+        font-size: 1.5rem;
+    }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+    .profile-page {
+        padding-bottom: 0;
+    }
+
+    .profile-hero {
+        padding: 48px 32px 56px;
+        border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+    }
+
+    .profile-hero-content {
+        gap: 28px;
+    }
+
+    .user-avatar {
+        width: 100px;
+        height: 100px;
+        font-size: 2.6rem;
+    }
+
+    .user-level {
+        font-size: 0.7rem;
+        padding: 3px 10px;
+    }
+
+    .user-name {
+        font-size: 1.9rem;
+    }
+
+    .user-balance-display .balance-amount {
+        font-size: 1.8rem;
+    }
+
+    .profile-content {
+        padding: 0 32px 32px;
+        margin-top: -20px;
+    }
+
+    .invite-card {
+        padding: 32px;
+    }
+
+    .invite-card-header {
+        margin-bottom: 28px;
+    }
+
+    .invite-header-text h2 {
+        font-size: 1.25rem;
+    }
+
+    .invite-code-display {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .invite-code-value {
+        font-size: 2rem;
+        letter-spacing: 5px;
+    }
+
+    .invite-link-box {
+        padding: 18px;
+    }
+
+    .invite-link-text {
+        font-size: 0.9rem;
+        padding: 14px 18px;
+    }
+
+    .copy-btn {
+        padding: 14px 28px;
+        font-size: 0.9rem;
+    }
+
+    .invite-stats-row {
+        gap: 20px;
+    }
+
+    .invite-stat {
+        padding: 20px 16px;
+    }
+
+    .invite-stat .stat-number {
+        font-size: 1.7rem;
+    }
+
+    .invite-stat .stat-label {
+        font-size: 0.75rem;
+    }
+
+    .quick-menu {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+    }
+
+    .quick-menu-item {
+        flex-direction: column;
+        text-align: center;
+        padding: 24px 20px;
+        gap: 12px;
+    }
+
+    .quick-menu-item:hover {
+        transform: translateY(-4px);
+    }
+
+    .menu-item-icon {
+        width: 56px;
+        height: 56px;
+        font-size: 1.6rem;
+    }
+
+    .menu-item-content {
+        align-items: center;
+    }
+
+    .menu-item-arrow {
+        display: none;
+    }
 }

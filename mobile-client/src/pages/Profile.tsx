@@ -44,93 +44,108 @@ export default function Profile() {
 
     return (
         <div className="profile-page">
-            <header className="profile-header">
-                <h1>我的</h1>
-            </header>
-
-            <div className="user-card">
-                <div className="avatar">
-                    {user?.username?.charAt(0).toUpperCase() || '?'}
-                </div>
-                <div className="user-info">
-                    <h2>{user?.username || '未登录'}</h2>
-                    <div className="balance">
-                        <span className="label">余额</span>
-                        <span className="value">¥{(user?.balance || 0).toLocaleString()}</span>
+            {/* User Info Hero Section */}
+            <section className="profile-hero">
+                <div className="profile-hero-bg"></div>
+                <div className="profile-hero-content">
+                    <div className="user-avatar-wrapper">
+                        <div className="user-avatar">
+                            {user?.username?.charAt(0).toUpperCase() || '?'}
+                        </div>
+                        <div className="user-level">VIP</div>
+                    </div>
+                    <div className="user-details">
+                        <h1 className="user-name">{user?.username || '未登录'}</h1>
+                        <div className="user-balance-display">
+                            <span className="balance-label">账户余额</span>
+                            <span className="balance-amount">¥{(user?.balance || 0).toLocaleString()}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <div className="invite-section">
-                <h3>邀请好友</h3>
-                <p className="invite-desc">分享您的邀请链接，好友注册后自动绑定</p>
-
-                <div className="invite-code-box">
-                    <span className="code-label">邀请码</span>
-                    <span className="code">{inviteCode || '---'}</span>
-                </div>
-
-                <div className="invite-url-box">
-                    <input type="text" readOnly value={inviteUrl} />
-                    <button onClick={handleCopy}>
-                        {copied ? '已复制' : '复制'}
-                    </button>
-                </div>
-            </div>
-
-            {referrals.length > 0 && (
-                <div className="referrals-section">
-                    <h3>我的推荐 ({referrals.length}人)</h3>
-                    <div className="referrals-list">
-                        {referrals.map((r: any) => (
-                            <div key={r.id} className="referral-item">
-                                <span className="referral-avatar">
-                                    {r.username?.charAt(0).toUpperCase()}
-                                </span>
-                                <span className="referral-name">{r.username}</span>
-                            </div>
-                        ))}
+            {/* Main Content */}
+            <div className="profile-content">
+                {/* Invite Card */}
+                <section className="invite-card">
+                    <div className="invite-card-header">
+                        <span className="invite-icon">🎁</span>
+                        <div className="invite-header-text">
+                            <h2>邀请好友赚佣金</h2>
+                            <p>分享链接，好友注册后自动绑定，享受推广返佣</p>
+                        </div>
                     </div>
-                </div>
-            )}
 
-            <div className="menu-section">
-                <Link to="/stats" className="menu-item highlight">
-                    <span className="menu-icon">📊</span>
-                    <span className="menu-label">推广统计</span>
-                    <span className="menu-badge">{referrals.length}人</span>
-                    <span className="menu-arrow">›</span>
-                </Link>
-                <Link to="/history" className="menu-item">
-                    <span className="menu-icon">📜</span>
-                    <span className="menu-label">投注记录</span>
-                    <span className="menu-arrow">›</span>
-                </Link>
-                <div className="menu-item" onClick={handleLogout}>
-                    <span className="menu-icon">🚪</span>
-                    <span className="menu-label">退出登录</span>
-                    <span className="menu-arrow">›</span>
-                </div>
+                    <div className="invite-code-display">
+                        <div className="invite-code-label">我的专属邀请码</div>
+                        <div className="invite-code-value">{inviteCode || '加载中...'}</div>
+                    </div>
+
+                    <div className="invite-link-box">
+                        <div className="invite-link-label">
+                            <span className="link-icon">🔗</span>
+                            <span>专属推广链接</span>
+                        </div>
+                        <div className="invite-link-content">
+                            <div className="invite-link-text">{inviteUrl || '加载中...'}</div>
+                            <button
+                                className={`copy-btn ${copied ? 'copied' : ''}`}
+                                onClick={handleCopy}
+                            >
+                                {copied ? '✓ 已复制' : '复制链接'}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="invite-stats-row">
+                        <div className="invite-stat">
+                            <span className="stat-number">{referrals.length}</span>
+                            <span className="stat-label">已邀请人数</span>
+                        </div>
+                        <div className="invite-stat">
+                            <span className="stat-number">{referrals.filter(r => r.is_active).length || 0}</span>
+                            <span className="stat-label">活跃用户</span>
+                        </div>
+                        <div className="invite-stat highlight">
+                            <span className="stat-number">10%</span>
+                            <span className="stat-label">返佣比例</span>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Quick Menu */}
+                <section className="quick-menu">
+                    <Link to="/stats" className="quick-menu-item featured">
+                        <div className="menu-item-icon">📊</div>
+                        <div className="menu-item-content">
+                            <span className="menu-item-title">推广统计</span>
+                            <span className="menu-item-desc">查看详细收益数据</span>
+                        </div>
+                        {referrals.length > 0 && (
+                            <span className="menu-item-badge">{referrals.length}人</span>
+                        )}
+                        <span className="menu-item-arrow">›</span>
+                    </Link>
+
+                    <Link to="/history" className="quick-menu-item">
+                        <div className="menu-item-icon">📜</div>
+                        <div className="menu-item-content">
+                            <span className="menu-item-title">投注记录</span>
+                            <span className="menu-item-desc">历史投注与中奖详情</span>
+                        </div>
+                        <span className="menu-item-arrow">›</span>
+                    </Link>
+
+                    <div className="quick-menu-item logout" onClick={handleLogout}>
+                        <div className="menu-item-icon">🚪</div>
+                        <div className="menu-item-content">
+                            <span className="menu-item-title">退出登录</span>
+                            <span className="menu-item-desc">切换其他账号</span>
+                        </div>
+                        <span className="menu-item-arrow">›</span>
+                    </div>
+                </section>
             </div>
-
-            <nav className="bottom-nav">
-                <Link to="/" className="nav-item">
-                    <span className="nav-icon">🏠</span>
-                    <span className="nav-label">首页</span>
-                </Link>
-                <Link to="/game" className="nav-item">
-                    <span className="nav-icon">🎲</span>
-                    <span className="nav-label">游戏</span>
-                </Link>
-                <Link to="/history" className="nav-item">
-                    <span className="nav-icon">📜</span>
-                    <span className="nav-label">记录</span>
-                </Link>
-                <Link to="/profile" className="nav-item active">
-                    <span className="nav-icon">👤</span>
-                    <span className="nav-label">我的</span>
-                </Link>
-            </nav>
         </div>
     );
 }
