@@ -61,17 +61,25 @@
 .user-info {
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
 }
 
 .user-name {
     font-weight: 600;
     font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .user-balance {
     font-size: 0.85rem;
     color: var(--color-success);
     font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .sidebar-nav {
