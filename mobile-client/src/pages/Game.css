@@ -1,0 +1,282 @@
+.game {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%);
+    padding-bottom: 140px;
+}
+
+.game-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.back-btn {
+    font-size: 1.5rem;
+    padding: 4px 8px;
+}
+
+.round-info {
+    text-align: center;
+}
+
+.round-label {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.balance-mini {
+    font-weight: 700;
+    color: #00d4aa;
+}
+
+/* Countdown */
+.countdown-section {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.countdown-ring {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+
+.countdown-ring svg {
+    width: 100%;
+    height: 100%;
+}
+
+.countdown-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.countdown-number {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.countdown-unit {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Recent Results */
+.recent-results {
+    display: flex;
+    gap: 8px;
+    padding: 0 20px 20px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.result-ball {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.result-ball.big {
+    background: linear-gradient(135deg, #f5af19, #f12711);
+}
+
+.result-ball.small {
+    background: linear-gradient(135deg, #00d4aa, #00a085);
+}
+
+/* Betting Area */
+.betting-area {
+    padding: 0 16px;
+}
+
+.quick-bets {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.quick-btn {
+    padding: 16px 8px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+}
+
+.quick-btn.selected {
+    background: linear-gradient(135deg, rgba(245, 175, 25, 0.3), rgba(241, 39, 17, 0.3));
+    border-color: #f5af19;
+}
+
+.quick-btn .odds {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.quick-btn.big {
+    color: #f5af19;
+}
+
+.quick-btn.small {
+    color: #00d4aa;
+}
+
+.quick-btn.odd {
+    color: #a855f7;
+}
+
+.quick-btn.even {
+    color: #3b82f6;
+}
+
+/* Number Grid */
+.numbers-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.number-btn {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.number-btn.selected {
+    background: linear-gradient(135deg, #f5af19, #f12711);
+    border-color: transparent;
+    box-shadow: 0 4px 15px rgba(245, 175, 25, 0.4);
+}
+
+/* Chip Selector */
+.chip-selector {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.chip {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+}
+
+.chip.selected {
+    background: linear-gradient(135deg, #f5af19, #f12711);
+    border-color: #fff;
+    transform: scale(1.1);
+}
+
+/* Confirm Bar */
+.confirm-bar {
+    position: fixed;
+    bottom: 70px;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: rgba(26, 26, 46, 0.98);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bet-summary {
+    display: flex;
+    flex-direction: column;
+}
+
+.bet-count {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.bet-total {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #f5af19;
+}
+
+.confirm-btn {
+    padding: 14px 40px;
+    border-radius: 30px;
+    background: linear-gradient(135deg, #f5af19, #f12711);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    transition: all 0.2s;
+}
+
+.confirm-btn:disabled {
+    opacity: 0.5;
+}
+
+/* Bottom Nav */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    background: rgba(26, 26, 46, 0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px 0;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+}
+
+.nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.7rem;
+}
+
+.nav-item.active {
+    color: #f5af19;
+}
+
+.nav-icon {
+    font-size: 1.3rem;
+}

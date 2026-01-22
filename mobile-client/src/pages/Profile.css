@@ -1,0 +1,171 @@
+.profile {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%);
+}
+
+.profile-header {
+    background: linear-gradient(135deg, rgba(245, 175, 25, 0.2), rgba(241, 39, 17, 0.2));
+    padding: 30px 20px;
+}
+
+.user-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.user-info h2 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.user-id {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.balance-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.balance-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.balance-label {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.balance-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #00d4aa;
+}
+
+.balance-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.action-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #fff;
+}
+
+.action-btn.deposit {
+    background: linear-gradient(135deg, #f5af19, #f12711);
+}
+
+.action-btn.withdraw {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.profile-content {
+    padding: 20px;
+    padding-bottom: 100px;
+}
+
+.menu-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.2s;
+}
+
+.menu-item:last-child {
+    border-bottom: none;
+}
+
+.menu-item:active {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.menu-icon {
+    font-size: 1.3rem;
+    margin-right: 16px;
+}
+
+.menu-label {
+    flex: 1;
+    font-weight: 500;
+}
+
+.menu-arrow {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.logout-btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    background: rgba(241, 39, 17, 0.2);
+    color: #f12711;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+/* Bottom Nav */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    background: rgba(26, 26, 46, 0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px 0;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+}
+
+.nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.7rem;
+}
+
+.nav-item.active {
+    color: #f5af19;
+}
+
+.nav-icon {
+    font-size: 1.3rem;
+}

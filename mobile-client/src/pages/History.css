@@ -1,0 +1,152 @@
+.history {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%);
+}
+
+.history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.history-header h1 {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.back-btn {
+    font-size: 1.5rem;
+    padding: 4px 8px;
+}
+
+.history-content {
+    padding: 20px;
+    padding-bottom: 100px;
+}
+
+.loading,
+.empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.empty-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 12px;
+}
+
+.bet-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.bet-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border-left: 4px solid transparent;
+}
+
+.bet-card.won {
+    border-left-color: #00d4aa;
+}
+
+.bet-card.lost {
+    border-left-color: #f12711;
+}
+
+.bet-card.pending {
+    border-left-color: #f5af19;
+}
+
+.bet-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.bet-type {
+    font-weight: 600;
+}
+
+.bet-round {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.bet-amount {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.amount {
+    font-weight: 600;
+}
+
+.odds {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.bet-result {
+    min-width: 80px;
+    text-align: right;
+}
+
+.win {
+    color: #00d4aa;
+    font-weight: 700;
+}
+
+.lose {
+    color: #f12711;
+    font-weight: 500;
+}
+
+.pending {
+    color: #f5af19;
+    font-size: 0.85rem;
+}
+
+/* Bottom Nav */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    background: rgba(26, 26, 46, 0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px 0;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+}
+
+.nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.7rem;
+}
+
+.nav-item.active {
+    color: #f5af19;
+}
+
+.nav-icon {
+    font-size: 1.3rem;
+}
