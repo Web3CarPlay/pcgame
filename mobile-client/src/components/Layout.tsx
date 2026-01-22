@@ -39,7 +39,7 @@ export default function Layout({ children, hideNav = false }: LayoutProps) {
 
                         {user && (
                             <div className="sidebar-user">
-                                <div className="user-avatar">
+                                <div className="sidebar-avatar">
                                     {user.username.charAt(0).toUpperCase()}
                                 </div>
                                 <div className="user-info">

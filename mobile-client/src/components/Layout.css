@@ -42,9 +42,11 @@
     border-radius: var(--radius-lg);
 }
 
-.user-avatar {
+.sidebar-avatar {
     width: 44px;
     height: 44px;
+    min-width: 44px;
+    min-height: 44px;
     background: var(--color-gold-gradient);
     border-radius: 50%;
     display: flex;
@@ -53,6 +55,7 @@
     font-weight: 700;
     font-size: 1.1rem;
     color: var(--color-bg-primary);
+    flex-shrink: 0;
 }
 
 .user-info {
