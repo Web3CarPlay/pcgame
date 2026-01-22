@@ -1,8 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAtomValue } from 'jotai';
 import { useState } from 'react';
+import { isSuperAdminAtom } from '../store/atoms';
+import { operatorApi } from '../api/client';
 import './Operators.css';
-
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080';
 
 interface Operator {
     id: number;
@@ -11,34 +12,25 @@ interface Operator {
     commission: number;
     status: string;
     user_count: number;
-}
-
-async function fetchOperators(): Promise<Operator[]> {
-    const res = await fetch(`${API_BASE}/api/v1/admin/operators`);
-    return res.json();
-}
-
-async function createOperator(data: Partial<Operator>): Promise<Operator> {
-    const res = await fetch(`${API_BASE}/api/v1/admin/operators`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-    });
-    return res.json();
+    created_by?: { username: string };
 }
 
 export default function Operators() {
+    const isSuperAdmin = useAtomValue(isSuperAdminAtom);
     const queryClient = useQueryClient();
     const [showModal, setShowModal] = useState(false);
     const [form, setForm] = useState({ code: '', name: '', commission: 0 });
 
     const { data: operators, isLoading } = useQuery({
         queryKey: ['operators'],
-        queryFn: fetchOperators,
+        queryFn: async () => {
+            const res = await operatorApi.list();
+            return res.data || [];
+        },
     });
 
     const createMutation = useMutation({
-        mutationFn: createOperator,
+        mutationFn: (data: typeof form) => operatorApi.create(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['operators'] });
             setShowModal(false);
@@ -46,12 +38,8 @@ export default function Operators() {
         },
     });
 
-    const handleSubmit = () => {
-        createMutation.mutate(form);
-    };
-
     const getInviteUrl = (code: string) => {
-        return `${window.location.origin}?op=${code}`;
+        return `${window.location.origin.replace('5173', '5174')}?op=${code}`;
     };
 
     return (
@@ -66,14 +54,27 @@ export default function Operators() {
             <div className="operators-grid">
                 {isLoading ? (
                     <div className="loading">加载中...</div>
+                ) : operators?.length === 0 ? (
+                    <div className="empty">
+                        <span className="empty-icon">🏢</span>
+                        <p>暂无运营者</p>
+                    </div>
                 ) : (
-                    operators?.map((op) => (
+                    operators?.map((op: Operator) => (
                         <div key={op.id} className="operator-card">
                             <div className="operator-header">
                                 <span className="operator-code">{op.code}</span>
                                 <span className={`status-badge ${op.status}`}>{op.status}</span>
                             </div>
                             <h3 className="operator-name">{op.name}</h3>
+
+                            {/* Super admin can see who created this operator */}
+                            {isSuperAdmin && op.created_by && (
+                                <div className="created-by">
+                                    创建者: {op.created_by.username}
+                                </div>
+                            )}
+
                             <div className="operator-stats">
                                 <div className="stat">
                                     <span className="stat-label">用户数</span>
@@ -93,6 +94,10 @@ export default function Operators() {
                                 >
                                     复制
                                 </button>
+                            </div>
+                            <div className="card-actions">
+                                <button className="action-btn edit">编辑</button>
+                                <button className="action-btn delete">删除</button>
                             </div>
                         </div>
                     ))
@@ -128,7 +133,7 @@ export default function Operators() {
                                 type="number"
                                 step="0.01"
                                 value={form.commission}
-                                onChange={(e) => setForm({ ...form, commission: parseFloat(e.target.value) })}
+                                onChange={(e) => setForm({ ...form, commission: parseFloat(e.target.value) || 0 })}
                                 placeholder="0.05 = 5%"
                             />
                         </div>
@@ -136,7 +141,7 @@ export default function Operators() {
                             <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
                                 取消
                             </button>
-                            <button className="btn btn-primary" onClick={handleSubmit}>
+                            <button className="btn btn-primary" onClick={() => createMutation.mutate(form)}>
                                 创建
                             </button>
                         </div>

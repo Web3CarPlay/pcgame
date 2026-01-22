@@ -8,14 +8,33 @@ import (
 	"gorm.io/gorm"
 )
 
+// Role constants
+const (
+	RoleSuperAdmin = "super_admin" // 超级管理员 - 可见所有数据
+	RoleAdmin      = "admin"       // 管理员 - 只能看到自己创建的运营者
+	RoleOperator   = "operator"    // 运营者 - 只能看到自己归属的用户
+	RoleUser       = "user"        // 普通用户
+)
+
+// AdminUser represents an administrator in the system
+type AdminUser struct {
+	gorm.Model
+	Username string `gorm:"uniqueIndex;size:50;not null" json:"username"`
+	Password string `gorm:"size:255;not null" json:"-"`
+	Role     string `gorm:"size:20;default:'admin'" json:"role"` // super_admin, admin, operator
+	Status   string `gorm:"size:20;default:'active'" json:"status"`
+}
+
 // Operator represents a business operator (运营者)
 type Operator struct {
 	gorm.Model
-	Code       string  `gorm:"uniqueIndex;size:20;not null" json:"code"` // 唯一标识码
-	Name       string  `gorm:"size:100;not null" json:"name"`            // 运营者名称
-	Commission float64 `gorm:"default:0" json:"commission"`              // 佣金比例
-	Status     string  `gorm:"size:20;default:'active'" json:"status"`   // active, disabled
-	UserCount  int     `gorm:"-" json:"user_count"`                      // 计算字段
+	Code        string     `gorm:"uniqueIndex;size:20;not null" json:"code"` // 唯一标识码
+	Name        string     `gorm:"size:100;not null" json:"name"`            // 运营者名称
+	Commission  float64    `gorm:"default:0" json:"commission"`              // 佣金比例
+	Status      string     `gorm:"size:20;default:'active'" json:"status"`   // active, disabled
+	CreatedByID *uint      `gorm:"index" json:"created_by_id"`               // 创建者 (Admin)
+	CreatedBy   *AdminUser `gorm:"foreignKey:CreatedByID" json:"created_by,omitempty"`
+	UserCount   int        `gorm:"-" json:"user_count"` // 计算字段
 }
 
 // User represents a player in the system
@@ -24,7 +43,7 @@ type User struct {
 	Username    string    `gorm:"uniqueIndex;size:50;not null" json:"username"`
 	Password    string    `gorm:"size:255;not null" json:"-"`
 	Balance     float64   `gorm:"default:0" json:"balance"`
-	Role        string    `gorm:"size:20;default:'user'" json:"role"` // user, admin
+	Role        string    `gorm:"size:20;default:'user'" json:"role"` // user
 	OperatorID  *uint     `gorm:"index" json:"operator_id"`           // 归属运营者
 	Operator    *Operator `gorm:"foreignKey:OperatorID" json:"operator,omitempty"`
 	ReferrerID  *uint     `gorm:"index" json:"referrer_id"` // 邀请人

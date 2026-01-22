@@ -1,32 +1,21 @@
 import { atom } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
 
 // Auth State
-export interface User {
+export interface AdminUser {
     id: number;
     username: string;
-    role: string;
+    role: string; // super_admin, admin, operator
 }
 
-export const userAtom = atom<User | null>(null);
-export const isAuthenticatedAtom = atom((get) => get(userAtom) !== null);
+export const tokenAtom = atomWithStorage<string | null>('admin_token', null);
+export const adminUserAtom = atomWithStorage<AdminUser | null>('admin_user', null);
+export const isAuthenticatedAtom = atom((get) => get(tokenAtom) !== null);
+export const isSuperAdminAtom = atom((get) => get(adminUserAtom)?.role === 'super_admin');
 
 // Game State
-export interface Round {
-    id: number;
-    issue_number: string;
-    keno_data: string;
-    result_a: number;
-    result_b: number;
-    result_c: number;
-    sum: number;
-    open_time: string;
-    close_time: string;
-    status: string;
-}
-
-export const currentRoundAtom = atom<Round | null>(null);
-export const roundHistoryAtom = atom<Round[]>([]);
+export const currentRoundAtom = atom<any>(null);
+export const historyAtom = atom<any[]>([]);
 
 // UI State
-export const sidebarOpenAtom = atom(true);
-export const loadingAtom = atom(false);
+export const sidebarOpenAtom = atom<boolean>(true);

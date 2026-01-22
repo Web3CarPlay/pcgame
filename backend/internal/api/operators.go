@@ -22,6 +22,8 @@ func SetupOperatorRoutes(r *gin.RouterGroup, db *gorm.DB) {
 	h := NewOperatorHandler(db)
 
 	ops := r.Group("/operators")
+	ops.Use(AuthMiddleware(db))
+	ops.Use(RequireRole(model.RoleSuperAdmin, model.RoleAdmin))
 	{
 		ops.GET("", h.List)
 		ops.POST("", h.Create)
@@ -32,10 +34,17 @@ func SetupOperatorRoutes(r *gin.RouterGroup, db *gorm.DB) {
 	}
 }
 
-// List returns all operators
+// List returns operators based on admin role
 func (h *OperatorHandler) List(c *gin.Context) {
 	var operators []model.Operator
-	h.db.Find(&operators)
+
+	// Super admin sees all, admin sees only their own
+	if IsSuperAdmin(c) {
+		h.db.Preload("CreatedBy").Find(&operators)
+	} else {
+		adminID, _ := c.Get("admin_id")
+		h.db.Where("created_by_id = ?", adminID).Preload("CreatedBy").Find(&operators)
+	}
 
 	// Calculate user count for each operator
 	for i := range operators {
@@ -62,11 +71,15 @@ func (h *OperatorHandler) Create(c *gin.Context) {
 		return
 	}
 
+	adminID, _ := c.Get("admin_id")
+	aid := adminID.(uint)
+
 	operator := model.Operator{
-		Code:       req.Code,
-		Name:       req.Name,
-		Commission: req.Commission,
-		Status:     "active",
+		Code:        req.Code,
+		Name:        req.Name,
+		Commission:  req.Commission,
+		Status:      "active",
+		CreatedByID: &aid,
 	}
 
 	if err := h.db.Create(&operator).Error; err != nil {
@@ -82,9 +95,18 @@ func (h *OperatorHandler) Get(c *gin.Context) {
 	id := c.Param("id")
 	var operator model.Operator
 
-	if err := h.db.First(&operator, id).Error; err != nil {
+	if err := h.db.Preload("CreatedBy").First(&operator, id).Error; err != nil {
 		c.JSON(404, gin.H{"error": "Operator not found"})
 		return
+	}
+
+	// Check permission
+	if !IsSuperAdmin(c) {
+		adminID, _ := c.Get("admin_id")
+		if operator.CreatedByID == nil || *operator.CreatedByID != adminID.(uint) {
+			c.JSON(403, gin.H{"error": "Access denied"})
+			return
+		}
 	}
 
 	// Calculate user count
@@ -105,6 +127,15 @@ func (h *OperatorHandler) Update(c *gin.Context) {
 		return
 	}
 
+	// Check permission
+	if !IsSuperAdmin(c) {
+		adminID, _ := c.Get("admin_id")
+		if operator.CreatedByID == nil || *operator.CreatedByID != adminID.(uint) {
+			c.JSON(403, gin.H{"error": "Access denied"})
+			return
+		}
+	}
+
 	var req CreateOperatorRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
@@ -122,6 +153,22 @@ func (h *OperatorHandler) Update(c *gin.Context) {
 // Delete deletes an operator
 func (h *OperatorHandler) Delete(c *gin.Context) {
 	id := c.Param("id")
+	var operator model.Operator
+
+	if err := h.db.First(&operator, id).Error; err != nil {
+		c.JSON(404, gin.H{"error": "Operator not found"})
+		return
+	}
+
+	// Check permission
+	if !IsSuperAdmin(c) {
+		adminID, _ := c.Get("admin_id")
+		if operator.CreatedByID == nil || *operator.CreatedByID != adminID.(uint) {
+			c.JSON(403, gin.H{"error": "Access denied"})
+			return
+		}
+	}
+
 	if err := h.db.Delete(&model.Operator{}, id).Error; err != nil {
 		c.JSON(500, gin.H{"error": "Failed to delete operator"})
 		return
@@ -132,8 +179,23 @@ func (h *OperatorHandler) Delete(c *gin.Context) {
 // GetUsers returns users belonging to an operator
 func (h *OperatorHandler) GetUsers(c *gin.Context) {
 	id := c.Param("id")
-	var users []model.User
+	var operator model.Operator
 
+	if err := h.db.First(&operator, id).Error; err != nil {
+		c.JSON(404, gin.H{"error": "Operator not found"})
+		return
+	}
+
+	// Check permission
+	if !IsSuperAdmin(c) {
+		adminID, _ := c.Get("admin_id")
+		if operator.CreatedByID == nil || *operator.CreatedByID != adminID.(uint) {
+			c.JSON(403, gin.H{"error": "Access denied"})
+			return
+		}
+	}
+
+	var users []model.User
 	h.db.Where("operator_id = ?", id).
 		Preload("Referrer").
 		Find(&users)

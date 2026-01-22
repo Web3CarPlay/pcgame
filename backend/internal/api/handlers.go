@@ -62,7 +62,7 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, hub *ws.Hub, logger *zap.SugaredLog
 	// API v1
 	v1 := r.Group("/api/v1")
 	{
-		// Game routes
+		// Game routes (public)
 		games := v1.Group("/games/pc28")
 		{
 			games.GET("/round/current", h.GetCurrentRound)
@@ -70,18 +70,22 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, hub *ws.Hub, logger *zap.SugaredLog
 			games.GET("/odds", h.GetOdds)
 		}
 
-		// Bet routes
+		// Bet routes (public for now, should be authenticated)
 		v1.POST("/bets", h.PlaceBet)
 		v1.GET("/bets", h.GetUserBets)
 
-		// Auth routes
+		// User auth routes (public)
 		v1.POST("/auth/register", userHandler.Register)
 
 		// User routes
 		SetupUserRoutes(v1, db)
 
-		// Admin routes
+		// Admin authentication routes
+		SetupAdminUserRoutes(v1, db)
+
+		// Admin protected routes
 		admin := v1.Group("/admin")
+		admin.Use(AuthMiddleware(db))
 		{
 			SetupOperatorRoutes(admin, db)
 		}

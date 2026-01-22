@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
+import { useAtomValue } from 'jotai';
 import { useState } from 'react';
+import { adminUserAtom, isSuperAdminAtom } from '../store/atoms';
+import { userApi } from '../api/client';
 import './Users.css';
-
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080';
 
 interface User {
     id: number;
@@ -17,20 +18,20 @@ interface User {
     referrer?: { username: string };
 }
 
-async function fetchUsers(): Promise<User[]> {
-    const res = await fetch(`${API_BASE}/api/v1/users`);
-    return res.json();
-}
-
 export default function Users() {
     const [search, setSearch] = useState('');
+    const isSuperAdmin = useAtomValue(isSuperAdminAtom);
+    const adminUser = useAtomValue(adminUserAtom);
 
     const { data: users, isLoading } = useQuery({
         queryKey: ['users'],
-        queryFn: fetchUsers,
+        queryFn: async () => {
+            const res = await userApi.list();
+            return res.data || [];
+        },
     });
 
-    const filteredUsers = users?.filter(u =>
+    const filteredUsers = users?.filter((u: User) =>
         u.username.toLowerCase().includes(search.toLowerCase())
     ) || [];
 
@@ -38,6 +39,10 @@ export default function Users() {
         <div className="users-page">
             <div className="page-header">
                 <h1 className="page-title">用户管理</h1>
+                {/* Only super_admin can export */}
+                {isSuperAdmin && (
+                    <button className="btn btn-secondary">导出数据</button>
+                )}
             </div>
 
             <div className="search-bar">
@@ -52,6 +57,11 @@ export default function Users() {
 
             {isLoading ? (
                 <div className="loading">加载中...</div>
+            ) : filteredUsers.length === 0 ? (
+                <div className="empty">
+                    <span className="empty-icon">👥</span>
+                    <p>暂无用户数据</p>
+                </div>
             ) : (
                 <div className="users-table-wrapper">
                     <table className="users-table">
@@ -61,14 +71,15 @@ export default function Users() {
                                 <th>用户名</th>
                                 <th>余额</th>
                                 <th>角色</th>
-                                <th>所属运营者</th>
+                                {/* Super admin sees all columns */}
+                                {isSuperAdmin && <th>所属运营者</th>}
                                 <th>邀请人</th>
                                 <th>邀请码</th>
                                 <th>邀请人数</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredUsers.map((user) => (
+                            {filteredUsers.map((user: User) => (
                                 <tr key={user.id}>
                                     <td>{user.id}</td>
                                     <td className="username">{user.username}</td>
@@ -76,15 +87,17 @@ export default function Users() {
                                     <td>
                                         <span className={`role-badge ${user.role}`}>{user.role}</span>
                                     </td>
-                                    <td>
-                                        {user.operator ? (
-                                            <span className="operator-tag">
-                                                {user.operator.name} ({user.operator.code})
-                                            </span>
-                                        ) : (
-                                            <span className="no-data">-</span>
-                                        )}
-                                    </td>
+                                    {isSuperAdmin && (
+                                        <td>
+                                            {user.operator ? (
+                                                <span className="operator-tag">
+                                                    {user.operator.name} ({user.operator.code})
+                                                </span>
+                                            ) : (
+                                                <span className="no-data">-</span>
+                                            )}
+                                        </td>
+                                    )}
                                     <td>
                                         {user.referrer ? (
                                             <span className="referrer-tag">{user.referrer.username}</span>

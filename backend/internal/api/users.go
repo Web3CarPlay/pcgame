@@ -23,16 +23,39 @@ func SetupUserRoutes(r *gin.RouterGroup, db *gorm.DB) {
 
 	users := r.Group("/users")
 	{
-		users.GET("", h.List)
+		users.GET("", AuthMiddleware(db), h.List)
 		users.GET("/invite-code", h.GetInviteCode)
 		users.GET("/referrals", h.GetReferrals)
 	}
 }
 
-// List returns all users with operator and referrer info
+// List returns all users with operator and referrer info (admin only)
 func (h *UserHandler) List(c *gin.Context) {
 	var users []model.User
-	h.db.Preload("Operator").Preload("Referrer").Find(&users)
+
+	adminRole, _ := c.Get("admin_role")
+	adminID, _ := c.Get("admin_id")
+
+	query := h.db.Preload("Operator").Preload("Referrer")
+
+	// Filter based on role
+	switch adminRole.(string) {
+	case model.RoleSuperAdmin:
+		// See all users
+		query.Find(&users)
+	case model.RoleAdmin:
+		// See users belonging to operators created by this admin
+		var operatorIDs []uint
+		h.db.Model(&model.Operator{}).Where("created_by_id = ?", adminID).Pluck("id", &operatorIDs)
+		query.Where("operator_id IN ?", operatorIDs).Find(&users)
+	case model.RoleOperator:
+		// TODO: Operator role can only see users in their operator
+		// For now, return empty
+		users = []model.User{}
+	default:
+		c.JSON(403, gin.H{"error": "Access denied"})
+		return
+	}
 
 	// Calculate invite count for each user
 	for i := range users {
