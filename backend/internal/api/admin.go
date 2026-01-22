@@ -22,10 +22,14 @@ func NewAdminHandler(db *gorm.DB) *AdminHandler {
 func SetupAdminUserRoutes(r *gin.RouterGroup, db *gorm.DB) {
 	h := NewAdminHandler(db)
 
-	// Public routes
-	r.POST("/login", h.Login)
+	// Public routes with rate limiting
+	auth := r.Group("")
+	auth.Use(RateLimitMiddleware(5, 60)) // 5 attempts per minute
+	{
+		auth.POST("/login", h.Login)
+	}
 
-	// Protected routes (super_admin only for user management)
+	// Protected routes (super_admin only)
 	admins := r.Group("/admins")
 	admins.Use(AuthMiddleware(db))
 	admins.Use(RequireRole(model.RoleSuperAdmin))
@@ -42,25 +46,25 @@ func SetupAdminUserRoutes(r *gin.RouterGroup, db *gorm.DB) {
 
 // LoginRequest represents a login request
 type LoginRequest struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	Username string `json:"username" binding:"required,min=3,max=50"`
+	Password string `json:"password" binding:"required,min=6,max=100"`
 }
 
 // Login handles admin login
 func (h *AdminHandler) Login(c *gin.Context) {
 	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": "Invalid request format"})
 		return
 	}
 
 	var admin model.AdminUser
 	if err := h.db.Where("username = ?", req.Username).First(&admin).Error; err != nil {
+		// Use same error message to prevent username enumeration
 		c.JSON(401, gin.H{"error": "Invalid credentials"})
 		return
 	}
 
-	// Verify password
 	if err := bcrypt.CompareHashAndPassword([]byte(admin.Password), []byte(req.Password)); err != nil {
 		c.JSON(401, gin.H{"error": "Invalid credentials"})
 		return
@@ -71,10 +75,11 @@ func (h *AdminHandler) Login(c *gin.Context) {
 		return
 	}
 
-	// TODO: Generate proper JWT token
-	// For now, return admin ID as token
+	// Generate JWT token
+	token := GenerateAdminToken(&admin)
+
 	c.JSON(200, gin.H{
-		"token": admin.ID,
+		"token": token,
 		"admin": gin.H{
 			"id":       admin.ID,
 			"username": admin.Username,
@@ -103,7 +108,6 @@ func (h *AdminHandler) List(c *gin.Context) {
 	var admins []model.AdminUser
 	h.db.Find(&admins)
 
-	// Remove passwords
 	result := make([]gin.H, len(admins))
 	for i, a := range admins {
 		result[i] = gin.H{
@@ -113,15 +117,14 @@ func (h *AdminHandler) List(c *gin.Context) {
 			"status":   a.Status,
 		}
 	}
-
 	c.JSON(200, result)
 }
 
 // CreateAdminRequest represents a create admin request
 type CreateAdminRequest struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
-	Role     string `json:"role" binding:"required"`
+	Username string `json:"username" binding:"required,min=3,max=50,alphanum"`
+	Password string `json:"password" binding:"required,min=6,max=100"`
+	Role     string `json:"role" binding:"required,oneof=super_admin admin operator"`
 }
 
 // Create creates a new admin
@@ -132,13 +135,6 @@ func (h *AdminHandler) Create(c *gin.Context) {
 		return
 	}
 
-	// Validate role
-	if req.Role != model.RoleSuperAdmin && req.Role != model.RoleAdmin && req.Role != model.RoleOperator {
-		c.JSON(400, gin.H{"error": "Invalid role"})
-		return
-	}
-
-	// Hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		c.JSON(500, gin.H{"error": "Failed to hash password"})
@@ -153,7 +149,7 @@ func (h *AdminHandler) Create(c *gin.Context) {
 	}
 
 	if err := h.db.Create(&admin).Error; err != nil {
-		c.JSON(500, gin.H{"error": "Failed to create admin"})
+		c.JSON(500, gin.H{"error": "Username already exists"})
 		return
 	}
 
@@ -164,19 +160,27 @@ func (h *AdminHandler) Create(c *gin.Context) {
 	})
 }
 
+// UpdateAdminRequest represents an update admin request
+type UpdateAdminRequest struct {
+	Role   string `json:"role" binding:"omitempty,oneof=super_admin admin operator"`
+	Status string `json:"status" binding:"omitempty,oneof=active disabled"`
+}
+
 // Update updates an admin
 func (h *AdminHandler) Update(c *gin.Context) {
-	id := c.Param("id")
+	id, err := ValidateID(c.Param("id"))
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Invalid ID"})
+		return
+	}
+
 	var admin model.AdminUser
 	if err := h.db.First(&admin, id).Error; err != nil {
 		c.JSON(404, gin.H{"error": "Admin not found"})
 		return
 	}
 
-	var req struct {
-		Role   string `json:"role"`
-		Status string `json:"status"`
-	}
+	var req UpdateAdminRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
@@ -200,7 +204,12 @@ func (h *AdminHandler) Update(c *gin.Context) {
 
 // Delete deletes an admin
 func (h *AdminHandler) Delete(c *gin.Context) {
-	id := c.Param("id")
+	id, err := ValidateID(c.Param("id"))
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Invalid ID"})
+		return
+	}
+
 	if err := h.db.Delete(&model.AdminUser{}, id).Error; err != nil {
 		c.JSON(500, gin.H{"error": "Failed to delete admin"})
 		return

@@ -42,17 +42,16 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, hub *ws.Hub, logger *zap.SugaredLog
 	h := NewHandler(db, hub, logger)
 	userHandler := NewUserHandler(db)
 
-	// CORS middleware
-	r.Use(func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", "*")
-		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-		c.Next()
-	})
+	// Security middleware
+	r.Use(SecurityHeadersMiddleware())
+
+	// CORS middleware - configure allowed origins for production
+	allowedOrigins := []string{
+		"http://localhost:5173", // Admin Web dev
+		"http://localhost:5174", // Mobile Client dev
+		"*",                     // TODO: Remove in production
+	}
+	r.Use(CORSMiddleware(allowedOrigins))
 
 	// Health check
 	r.GET("/health", func(c *gin.Context) {
@@ -74,18 +73,21 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, hub *ws.Hub, logger *zap.SugaredLog
 			games.GET("/odds", h.GetOdds)
 		}
 
-		// Player auth routes (public)
-		v1.POST("/auth/register", userHandler.Register)
-		v1.POST("/auth/login", userHandler.Login)
+		// Player auth routes (public, with rate limiting)
+		auth := v1.Group("/auth")
+		auth.Use(RateLimitMiddleware(10, 60)) // 10 requests per minute
+		{
+			auth.POST("/register", userHandler.Register)
+			auth.POST("/login", userHandler.Login)
+		}
 
-		// Admin auth routes (public)
+		// Admin auth routes (public, with rate limiting)
 		SetupAdminUserRoutes(v1, db)
 
 		// ==========================================
 		// Player Protected Routes
 		// ==========================================
 
-		// Bet routes (player authenticated)
 		bets := v1.Group("/bets")
 		bets.Use(PlayerAuthMiddleware(db))
 		{
@@ -93,7 +95,6 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, hub *ws.Hub, logger *zap.SugaredLog
 			bets.GET("", h.GetUserBets)
 		}
 
-		// Player routes
 		SetupUserRoutes(v1, db)
 
 		// ==========================================
@@ -118,7 +119,6 @@ func (h *Handler) GetCurrentRound(c *gin.Context) {
 		c.JSON(404, gin.H{"error": "No open round"})
 		return
 	}
-
 	c.JSON(200, round)
 }
 
@@ -129,7 +129,6 @@ func (h *Handler) GetHistory(c *gin.Context) {
 		Order("id desc").
 		Limit(20).
 		Find(&rounds)
-
 	c.JSON(200, rounds)
 }
 
@@ -140,10 +139,10 @@ func (h *Handler) GetOdds(c *gin.Context) {
 
 // PlaceBetRequest represents a bet placement request
 type PlaceBetRequest struct {
-	RoundID  uint    `json:"round_id" binding:"required"`
-	BetType  string  `json:"bet_type" binding:"required"`
-	BetValue int     `json:"bet_value"`
-	Amount   float64 `json:"amount" binding:"required,gt=0"`
+	RoundID  uint    `json:"round_id" binding:"required,gt=0"`
+	BetType  string  `json:"bet_type" binding:"required,oneof=number big small odd even big_odd big_even small_odd small_even"`
+	BetValue int     `json:"bet_value" binding:"min=0,max=27"`
+	Amount   float64 `json:"amount" binding:"required,gt=0,lte=100000"`
 }
 
 // PlaceBet places a new bet
@@ -154,14 +153,12 @@ func (h *Handler) PlaceBet(c *gin.Context) {
 		return
 	}
 
-	// Get user from context (set by PlayerAuthMiddleware)
 	userID, ok := GetUserIDFromContext(c)
 	if !ok {
 		c.JSON(401, gin.H{"error": "Not authenticated"})
 		return
 	}
 
-	// Verify round is open
 	var round model.PC28Round
 	if err := h.db.First(&round, req.RoundID).Error; err != nil {
 		c.JSON(404, gin.H{"error": "Round not found"})
@@ -173,17 +170,14 @@ func (h *Handler) PlaceBet(c *gin.Context) {
 		return
 	}
 
-	// Get odds
 	odds := h.gameSvc.GetOdds()[req.BetType]
 	if odds == 0 {
 		c.JSON(400, gin.H{"error": "Invalid bet type"})
 		return
 	}
 
-	// Start transaction
 	tx := h.db.Begin()
 
-	// Check and deduct user balance
 	var user model.User
 	if err := tx.First(&user, userID).Error; err != nil {
 		tx.Rollback()
@@ -197,14 +191,12 @@ func (h *Handler) PlaceBet(c *gin.Context) {
 		return
 	}
 
-	// Deduct balance
 	if err := tx.Model(&user).Update("balance", gorm.Expr("balance - ?", req.Amount)).Error; err != nil {
 		tx.Rollback()
 		c.JSON(500, gin.H{"error": "Failed to deduct balance"})
 		return
 	}
 
-	// Create bet
 	bet := model.PC28Bet{
 		UserID:   userID,
 		RoundID:  req.RoundID,
@@ -222,13 +214,11 @@ func (h *Handler) PlaceBet(c *gin.Context) {
 	}
 
 	tx.Commit()
-
 	c.JSON(201, bet)
 }
 
 // GetUserBets returns user's bet history
 func (h *Handler) GetUserBets(c *gin.Context) {
-	// Get user from context
 	userID, ok := GetUserIDFromContext(c)
 	if !ok {
 		c.JSON(401, gin.H{"error": "Not authenticated"})
@@ -241,7 +231,6 @@ func (h *Handler) GetUserBets(c *gin.Context) {
 		Order("id desc").
 		Limit(50).
 		Find(&bets)
-
 	c.JSON(200, bets)
 }
 
@@ -253,9 +242,7 @@ func (h *Handler) HandleWebSocket(c *gin.Context) {
 		return
 	}
 
-	// TODO: Get user from query params or token
 	userID := uint(0)
-
 	client := ws.NewClient(h.hub, conn, userID)
 	h.hub.Register(client)
 

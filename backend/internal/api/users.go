@@ -22,7 +22,7 @@ func NewUserHandler(db *gorm.DB) *UserHandler {
 func SetupUserRoutes(r *gin.RouterGroup, db *gorm.DB) {
 	h := NewUserHandler(db)
 
-	// Admin-only routes (list users)
+	// Admin-only routes
 	users := r.Group("/users")
 	users.Use(AuthMiddleware(db))
 	{
@@ -39,7 +39,7 @@ func SetupUserRoutes(r *gin.RouterGroup, db *gorm.DB) {
 	}
 }
 
-// List returns all users with operator and referrer info (admin only)
+// List returns all users (admin only)
 func (h *UserHandler) List(c *gin.Context) {
 	var users []model.User
 
@@ -48,25 +48,20 @@ func (h *UserHandler) List(c *gin.Context) {
 
 	query := h.db.Preload("Operator").Preload("Referrer")
 
-	// Filter based on role
 	switch adminRole.(string) {
 	case model.RoleSuperAdmin:
-		// See all users
 		query.Find(&users)
 	case model.RoleAdmin:
-		// See users belonging to operators created by this admin
 		var operatorIDs []uint
 		h.db.Model(&model.Operator{}).Where("created_by_id = ?", adminID).Pluck("id", &operatorIDs)
 		query.Where("operator_id IN ?", operatorIDs).Find(&users)
 	case model.RoleOperator:
-		// TODO: Operator role can only see users in their operator
 		users = []model.User{}
 	default:
 		c.JSON(403, gin.H{"error": "Access denied"})
 		return
 	}
 
-	// Calculate invite count for each user
 	for i := range users {
 		var count int64
 		h.db.Model(&model.User{}).Where("referrer_id = ?", users[i].ID).Count(&count)
@@ -127,25 +122,23 @@ func (h *UserHandler) GetReferrals(c *gin.Context) {
 
 	var referrals []model.User
 	h.db.Where("referrer_id = ?", userID).Find(&referrals)
-
 	c.JSON(200, referrals)
 }
 
 // ==========================================
-// Player Auth Routes
+// Player Auth Handlers
 // ==========================================
 
-// LoginRequest represents a login request
 type PlayerLoginRequest struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	Username string `json:"username" binding:"required,min=3,max=50"`
+	Password string `json:"password" binding:"required,min=6,max=100"`
 }
 
 // Login handles player login
 func (h *UserHandler) Login(c *gin.Context) {
 	var req PlayerLoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": "Invalid request format"})
 		return
 	}
 
@@ -155,16 +148,16 @@ func (h *UserHandler) Login(c *gin.Context) {
 		return
 	}
 
-	// Verify password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
 		c.JSON(401, gin.H{"error": "Invalid credentials"})
 		return
 	}
 
-	// TODO: Generate proper JWT token
-	// For now, return user ID as token
+	// Generate JWT token
+	token := GeneratePlayerToken(&user)
+
 	c.JSON(200, gin.H{
-		"token": user.ID,
+		"token": token,
 		"user": gin.H{
 			"id":          user.ID,
 			"username":    user.Username,
@@ -176,13 +169,13 @@ func (h *UserHandler) Login(c *gin.Context) {
 
 // RegisterRequest represents a user registration request
 type RegisterRequest struct {
-	Username     string `json:"username" binding:"required"`
-	Password     string `json:"password" binding:"required"`
-	OperatorCode string `json:"operator_code"` // ?op=xxx
-	ReferrerCode string `json:"referrer_code"` // ?ref=xxx
+	Username     string `json:"username" binding:"required,min=3,max=50,alphanum"`
+	Password     string `json:"password" binding:"required,min=6,max=100"`
+	OperatorCode string `json:"operator_code" binding:"omitempty,max=20"`
+	ReferrerCode string `json:"referrer_code" binding:"omitempty,max=20"`
 }
 
-// Register handles user registration with operator/referrer attribution
+// Register handles user registration
 func (h *UserHandler) Register(c *gin.Context) {
 	var req RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -190,20 +183,25 @@ func (h *UserHandler) Register(c *gin.Context) {
 		return
 	}
 
-	// Hash password
+	// Check if username exists
+	var existing model.User
+	if err := h.db.Where("username = ?", req.Username).First(&existing).Error; err == nil {
+		c.JSON(400, gin.H{"error": "Username already exists"})
+		return
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		c.JSON(500, gin.H{"error": "Failed to hash password"})
+		c.JSON(500, gin.H{"error": "Failed to process request"})
 		return
 	}
 
 	user := model.User{
 		Username: req.Username,
 		Password: string(hashedPassword),
-		Balance:  1000, // Initial balance for testing
+		Balance:  1000,
 	}
 
-	// Handle referrer code
 	if req.ReferrerCode != "" {
 		var referrer model.User
 		if err := h.db.Where("invite_code = ?", req.ReferrerCode).First(&referrer).Error; err == nil {
@@ -214,7 +212,6 @@ func (h *UserHandler) Register(c *gin.Context) {
 		}
 	}
 
-	// Handle operator code (only if not already set from referrer)
 	if user.OperatorID == nil && req.OperatorCode != "" {
 		var operator model.Operator
 		if err := h.db.Where("code = ?", req.OperatorCode).First(&operator).Error; err == nil {
@@ -227,9 +224,11 @@ func (h *UserHandler) Register(c *gin.Context) {
 		return
 	}
 
-	// Return token after registration (auto-login)
+	// Generate JWT token
+	token := GeneratePlayerToken(&user)
+
 	c.JSON(201, gin.H{
-		"token": user.ID,
+		"token": token,
 		"user": gin.H{
 			"id":          user.ID,
 			"username":    user.Username,
